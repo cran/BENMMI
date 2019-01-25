@@ -1,0 +1,3 @@
+### AMBI
+
+`r settings$legendtext`(AMBI) = ( AMBI<sub>bad</sub> - AMBI<sub>ass</sub> ) / ( AMBI<sub>bad</sub> - AMBI<sub>ref</sub> )

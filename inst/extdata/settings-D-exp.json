@@ -1,0 +1,29 @@
+{
+    "title": "MMI analysis 'North Sea'",
+    "user": "Jan de Ruiter",
+    "date": "2016-12-21",
+    "files": {
+        "benthos": "INPUT-FILES/DATA-SNS-NL-1000-surface-OBJECTID-YEAR.csv",
+        "taxa": "REF-FILES/TAXA-BE-DE-NL-UK-2017-01-06.csv",
+        "groupsToExclude": "REF-FILES/TAXONOMIC-GROUPS-EXCLUDED.csv",
+        "Habitats": "REF-FILES/AREAS-HABITATS-SNS-2016-11-27.csv",
+        "AMBI": "REF-FILES/AMBI-NL+.csv",
+        "ITI": "REF-FILES/ITI+carnivores-2015-10-23.csv"
+    },
+    "indices": ["D"],
+    "weights": null,
+    "confidenceLevel": 0.90,
+    "pressure": {
+        "name": "Fishing activity",
+        "unit": "subsurface, sweeps/year" 
+    },
+    "months": [1,12],
+    "pooling": {
+        "enabled": false,
+        "randomSeed": 314,
+        "targetArea": [0.09, 0.11]
+    },
+    "genusToSpeciesConversion": true,
+    "model": "exponential",
+    "legendText": "normalized"      
+}

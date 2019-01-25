@@ -1,0 +1,157 @@
+
+## Multidimensional scaling (MDS)
+
+```{r}
+to_log("INFO", "Entering section 'Multidimensional scaling'...")
+```
+
+The plot below is non-metric multidimensional scaling plot of the Bray-Curtis dissimilarity (distance). This plot can be used to identify outliers in the data. 
+
+The Bray-Curtis dissimilarity is given by:
+
+<b>D</b><sub>_ij_</sub>= &Sigma;<sub>_k_</sub>abs(_n_<sub>_ik_</sub> - _n_<sub>_jk_</sub>) / &Sigma;<sub>_k_</sub>(_n_<sub>_ik_</sub> + _n_<sub>_jk_</sub>)
+
+where _n_<sub>_ik_</sub> and _n_<sub>_jk_</sub> is the abundance of species _k_ at locations _i_ and _j_ respectively.
+
+
+```{r}
+# create table in wide format: 
+# - left: sample identifiers
+# - right: abundance per taxon
+d <- d_mmi %>%
+    select(  OBJECTID, HABITAT, DATE, POOL_RUN, POOL_ID, TAXON, VALUE) %>%
+    mutate(DATE = format(DATE)) %>%
+    group_by(OBJECTID, HABITAT, DATE, POOL_RUN, POOL_ID, TAXON) %>%
+    summarise(VALUE = sum(VALUE)) %>%
+    spread(key = TAXON, value = VALUE, fill = 0L)
+
+# select abundances only
+N <- as.matrix(d[, -(1:5)])
+
+# create Bray-Curtis distance matrix
+n <- nrow(N)
+D <- matrix(data = 0, nrow = n, ncol = n)
+for (i in 1:(n-1)) {
+    n1 <- N[i, ]
+    for (j in (i+1):n) {
+        n2 <- N[j, ]
+        D[i, j] <- bray_curtis(n1, n2)
+        D[j, i] <- D[i, j]
+    }
+}
+
+# apply sammon MDS
+S <- MASS::sammon(D, trace = FALSE, tol = 1.0e-6)
+
+# extract MDS configuration
+V <- S$points %>%
+    as.data.frame %>%
+    set_names(c("V1", "V2"))
+
+# add object identifiers
+V$OBJECTID <- d$OBJECTID
+V$HABITAT <- d$HABITAT
+V$DATE <- d$DATE
+V$MARKER <- 1:nrow(V)
+V$MEDIAN_BC <- apply(X = D, MARGIN = 1, FUN = median)
+if (isTRUE(settings$pooling)) {
+    V$POOL_RUN <- d$POOL_RUN
+    V$POOL_ID <- d$POOL_ID
+} else {
+    V$SAMPLEID <- d_mmi$SAMPLEID[d$POOL_ID %>% match(d_mmi$ID)]
+}
+
+```
+
+Multidimensional scaling (MDS) presses the _m_ &times; _m_ dimensional distance matrix <b>D</b> into a 2 dimensional space given that the distortion of the original distances in <b>D</b> is minimized, where _m_ is the number of sampling sites. See Sammon (1969) for details.
+
+The figure below gives the multidimensional scaling representation of matrix <b>D</b>. Potential outliers are indicated by text markers.
+
+<br>
+```{r}
+# detect potential outliers (two rounds of convex hull)
+d <- V %>% select(V1, V2, MARKER)
+marker_pot_outlier <- d$MARKER[chull(x = d$V1, y = d$V2)]
+d <- d %>% filter(!(MARKER %in% marker_pot_outlier))
+marker_pot_outlier <- c(marker_pot_outlier, d$MARKER[chull(x = d$V1, y = d$V2)])
+V$POT_OUTLIER <- V$MARKER %in% marker_pot_outlier
+
+# create look-up-table for figure caption
+V <- V %>% 
+    mutate(id_chr = paste(OBJECTID, HABITAT, sep = "-")) %>% 
+    mutate(id_num = id_chr %>% match(sort(unique(id_chr)))) %>%
+    mutate(id_num = factor(x = id_num, levels = sort(unique(id_num)), ordered = TRUE))
+
+lut <- V %>% 
+    select(id_num, id_chr) %>% 
+    distinct %>%
+    arrange(id_num)
+```
+
+<figure>
+
+```{r, fig.width = 6, fig.height = 5, out.width=900, dpi=300}
+
+# create combinations of color and shape
+col_shp <- expand.grid(
+    col = c("red", "deepskyblue", "orange", "green", "purple"),
+    shp = c(16, 15, 17, 3, 4),
+    stringsAsFactors = FALSE
+)
+
+# plot MDS
+ggplot() +
+    geom_point(
+        data = V, 
+        mapping = aes(x = V1, y = V2, colour = id_num, shape = id_num)) +
+    geom_text(
+        data = V[V$POT_OUTLIER, ],
+        mapping  = aes(x = V1, y = V2, label = MARKER)) +
+    scale_color_manual(
+        name = "",
+        values = col_shp$col
+    ) +
+    scale_shape_manual(
+        name = "",
+        values = col_shp$shp
+    ) +
+    scale_x_continuous() +
+    scale_y_continuous()
+
+```
+
+<figcaption>Multidimensional scaling plot. The meaning of the numbers in the legend is: `r paste(lut$id_num, lut$id_chr, sep = " = ", collapse = "; ")`</figcaption>
+</figure>
+<br>
+<br>
+
+The table below can be used to identify potential outliers by matching the text markers in the figure above with those in column `MARKER` below. The MDS-coordinates are given by: (V1, V2); and MEDIAN_BC is the median value of the Bray-Curtis dissimilarity. The Bray-Curtis dissimilarity is given on a scale ranging from  0 (= identical) to 1 (= very different from other samples) and can be used to identify potential ouliers.
+
+```{r results='asis'}
+
+# filter potential outliers
+V <- V %>%
+    filter(POT_OUTLIER)
+
+# create table with information on potential outliers
+if (isTRUE(settings$pooling)) {
+    V %>%
+        select(MARKER, V1 = round(V1, 2), V2 = round(V2, 2), 
+               AREA_CODE = id_num, OBJECTID, HABITAT, DATE, 
+               POOL_RUN, POOL_ID, MEDIAN_BC) %>%
+        mutate(DATE = format(DATE)) %>%
+        xtable %>% 
+        print(type = "html")
+} else {
+    V %>%
+        select(MARKER, V1, V2, 
+               OBJECTID, HABITAT, DATE,
+               SAMPLEID, MEDIAN_BC) %>%
+        mutate(
+            V1 = round(V1, 2),
+            V2 = round(V2, 2),
+            DATE = format(DATE)) %>%
+        xtable %>% 
+        print(type = "html", include.rownames = FALSE)
+}
+```

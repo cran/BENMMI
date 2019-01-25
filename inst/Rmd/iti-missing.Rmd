@@ -1,0 +1,26 @@
+### ITI: Infaunal Trophic Index
+
+The average percentage of the total abundance per sample without an ITI classification (Gittenberger and van Loon, 2013) is given below:
+
+```{r results='asis'}
+if (tibble::has_name(d_mmi, "ITI_GROUP")) {
+    d <- d_mmi %>%
+        filter(!CARNIVORE | is.na(CARNIVORE)) %>%
+        group_by(OBJECTID, HABITAT, YEAR) %>%
+        mutate(N = sum(VALUE)) %>%
+        filter(has_iti(taxon = TAXON, group = ITI_GROUP)) %>%
+        summarise(ITI_MISSING = 100 * (1 - sum(VALUE) / unique(N)))
+} else {
+    d <- d_mmi %>% 
+        filter(!CARNIVORE | is.na(CARNIVORE)) %>%
+        group_by(OBJECTID, HABITAT, YEAR) %>%
+        mutate(N = sum(VALUE)) %>%
+        filter(has_iti(taxon = TAXON)) %>%
+        summarise(ITI_MISSING = 100 * (1 - sum(VALUE) / unique(N)))
+}
+
+d %>% xtable %>%
+    print(type = "html")
+```
+
+Note that in `r sum(d$ITI_MISSING > 20)` cases, more than 20% of the total abundance does not have an ITI classification.

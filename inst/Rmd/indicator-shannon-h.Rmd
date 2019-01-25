@@ -1,0 +1,3 @@
+### Shannon Index
+
+Shannon Index (_H'_)is given by (Shannon, 1948, p.393). In this tool, the logarithm to the base 2 is taken to estimate _H'_.

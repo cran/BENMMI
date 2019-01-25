@@ -1,0 +1,5 @@
+The following AMBI-file has been provided: `r sQuote(basename(settings$files$ambi))`
+
+containing species not present in the standard AMBI-list, or for which according to Dutch North Sea benthos specialists a different species sensitivity classification is necessary (Van Loon et al., 2015).
+
+The standard AMBI-list (www.azti.es, version November 2014, by courtesy of Angel Borja) will be used for taxa not available in `r sQuote(basename(settings$files$ambi))`.

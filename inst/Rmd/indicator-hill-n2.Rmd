@@ -1,0 +1,3 @@
+### Hill's Diversity Number N2
+
+Hill's diversity number N2 is the reciprocal of Simpson's index

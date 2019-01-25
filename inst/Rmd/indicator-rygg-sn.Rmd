@@ -1,0 +1,7 @@
+### Rygg SN
+
+Rygg SN is given by:
+
+SN = ln(_S_) / ln(ln(_N_))  for _N_ > exp(1)
+
+It is less dependent on the sample area than _S_.

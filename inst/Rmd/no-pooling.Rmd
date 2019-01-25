@@ -1,0 +1,9 @@
+Data will not be pooled and taken as is.
+
+```{r}
+# in case of no pooling, assign sample id to the POOL_ID column
+d_mmi <- d_mmi %>% mutate(
+    POOL_RUN = 1L,
+    POOL_ID = ID
+)
+```

@@ -1,0 +1,111 @@
+### Which MMI correlates best with pressure?
+
+```{r}
+to_log("INFO", "Entering subsection 'Which MMI correlates best with pressure?'...")
+```
+
+
+```{r}
+number_of_combinations <- c(1L, 3L, 7L)[number_of_indicators]   
+```
+
+Multimetric indices are constructed by fitting all `r number_of_combinations` possible weighted linear combinations of the set of indices `r toString(paste0(indicators, "*"))` to the pressure. 
+
+Our general model is
+
+MMI^* = b<sub>0</sub> + b<sub>1</sub> &times; exp(b<sub>2</sub> &times; PRESSURE)
+
+where MMI^* is the `r if (tolower(settings$legendtext) == "eqr") {"EQR of the"} else {"normalized"}` multimetric index, PRESSURE are the values in the PRESSURE column of the input file, and b<sub>0</sub>, b<sub>1</sub> and b<sub>2</sub> are coefficients.
+
+MMI^* is a weighted linear combination of `r if (tolower(settings$legendtext) == "eqr") {"the ecological quality ratios of the"} else {"normalized values"}` of the selected indices:
+
+`r paste(paste0("w<sub>", 1:number_of_indicators, "</sub>"), paste0(indicators, "*"), collapse = " + ", sep = " &times; ")`. 
+
+where weights `r toString(paste0("w<sub>", 1:number_of_indicators, "</sub>"))` are non-negative and sum to one.
+
+For each of the `r number_of_combinations` possible combinations of `r title_text_plur`, the weights are optimized mathematically in order to maximize the precision of the model mentioned above. Duplicated models (with approximately the same set of weights) have been removed.
+
+```{r}
+# initialize weight matrix and add single metric weights
+W <- diag(number_of_indicators)
+dimnames(W) <- list(NULL, indicators_EQR)
+W <- rbind(W, 
+    matrix(
+        data = 0, 
+        nrow = number_of_combinations - number_of_indicators, 
+        ncol = number_of_indicators
+    )
+)
+
+
+
+# bimetric indicators
+i <- number_of_indicators
+if (number_of_indicators >= 2L) {
+    f_obj <- function(w, id) {
+            (sprintf(
+                "I(%e * %s + %e * %s) ~ b0 + b1*exp(b2*PRESSURE)",
+                w,     indicators_EQR[id[1]],
+                1 - w, indicators_EQR[id[2]]
+            ) %>%
+            as.formula %>%
+            nls(
+                data = d_ind,  
+                start = list(b0 = 0.1, b1 = 0.9, b2 = -1),
+                control = nls.control(maxiter = 1000))
+            ) %>%
+            AIC
+    }
+    opt <- optimize(f = f_obj, interval = c(0, 1), maximum = FALSE, id = c(1, 2))
+    i <- i + 1L
+    W[i, 1] <-     opt$minimum
+    W[i, 2] <- 1 - opt$minimum
+}
+
+
+# trimetric indicators
+if (number_of_indicators == 3L) {
+    opt <- optimize(f = f_obj, interval = c(0, 1), maximum = FALSE, id = c(1, 3))
+    i <- i + 1L
+    W[i, 1] <-     opt$minimum
+    W[i, 3] <- 1 - opt$minimum
+    opt <- optimize(f = f_obj, interval = c(0, 1), maximum = FALSE, id = c(2, 3))
+    i <- i + 1L
+    W[i, 2] <-     opt$minimum
+    W[i, 3] <- 1 - opt$minimum
+}
+
+if (number_of_indicators == 3L) {
+    f_obj <- function(w) {
+        if (any(w < 0)) {
+            return(Inf)
+        }
+        w <- w / sum(w)
+        (sprintf(
+            "I(%e * %s + %e * %s + %e * %s) ~ b0 + b1*exp(b2*PRESSURE)",
+            w[1], indicators_EQR[1],
+            w[2], indicators_EQR[2],
+            w[3], indicators_EQR[3]
+        ) %>% 
+        as.formula %>%
+        nls(
+            data = d_ind,  
+            start = list(b0 = 0.1, b1 = 0.9, b2 = -1),
+            control = nls.control(maxiter = 1000))
+        ) %>%
+        AIC
+    }
+    opt <- optim(
+        par = c(1, 1, 1), 
+        fn = f_obj, 
+        method = "Nelder-Mead", 
+        control = list(maxit = 1000, fnscale = 1) # minimization
+    )
+    has_converged <- opt$convergence == 0L
+    if (!has_converged) {
+        stop("Can't find an optimum set of weights", call. = FALSE)
+    }
+    i <- i + 1L
+    W[i, ] <- opt$par / sum(opt$par)
+}
+```

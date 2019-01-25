@@ -1,0 +1,3 @@
+### Species richness
+
+Species richness (_S_) is defined as the number of taxa (lowest identification level possible) per sampling unit (data pool or box core sample).

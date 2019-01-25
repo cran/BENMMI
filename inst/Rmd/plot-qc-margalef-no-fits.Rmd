@@ -1,0 +1,6 @@
+It is not possible to create quality control plots (fits of _S_-1 as function of log(_N_)) because the number of samples is smaller then `r min_samples`.
+
+```{r}
+to_log("INFO", sprintf("The number of samples is smaller than %s...", min_samples))
+to_log("INFO", "...therefore no quality control plots will be created.")
+```

@@ -1,0 +1,12 @@
+## Species sensitivity values
+
+```{r}
+to_log("INFO", "Entering section 'Species sensitivity values'...")
+```
+
+
+```{r child="ambi.Rmd", eval=("ambi" %in% settings$indicators)}
+```
+
+```{r child="iti.Rmd", eval=("iti" %in% settings$indicators)}
+```

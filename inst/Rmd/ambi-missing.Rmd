@@ -1,0 +1,24 @@
+### AZTI Marine Biotic Index
+
+Borja et al. (2000) introduced the AZTI Marine Biotic Index (AMBI). It is a weighted linear combination of species sensitivity classes. The average percentage of the total abundance per sample without an AMBI classification is given below:
+
+```{r results='asis'}
+if (tibble::has_name(d_mmi, "AMBI_GROUP")) {
+    d <- d_mmi %>% 
+        group_by(OBJECTID, HABITAT, YEAR) %>%
+        mutate(N = sum(VALUE)) %>%
+        filter(has_ambi(taxon = TAXON, group = AMBI_GROUP)) %>%
+        summarise(AMBI_MISSING = 100 * (1 - sum(VALUE) / unique(N)))
+} else {
+    d <- d_mmi %>% 
+        group_by(OBJECTID, HABITAT, YEAR) %>%
+        mutate(N = sum(VALUE)) %>%
+        filter(has_ambi(taxon = TAXON)) %>%
+        summarise(AMBI_MISSING = 100 * (1 - sum(VALUE) / unique(N)))
+}
+
+d %>% xtable %>%
+    print(type = "html")
+```
+
+Note that in `r sum(d$AMBI_MISSING > 20)` cases, more than 20% of the total abundance does not have an AMBI classification.

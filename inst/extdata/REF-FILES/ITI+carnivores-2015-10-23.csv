@@ -1,0 +1,710 @@
+TAXON,GROUP,carnivore
+Abyssoninoe hibernica,IV,TRUE
+Acanthodoris pilosa,IV,TRUE
+Acteon tornatilis,IV,TRUE
+Actinia equina,IV,TRUE
+Actiniaria,IV,TRUE
+Aeolidia papillosa,IV,TRUE
+Alitta,IV,TRUE
+Alitta succinea,IV,TRUE
+Alitta virens,IV,TRUE
+Anaitides,IV,TRUE
+Anthozoa,IV,TRUE
+Antinoella finmarchica,IV,TRUE
+Aphrodita,IV,TRUE
+Aphrodita aculeata,IV,TRUE
+Aphroditidae,IV,TRUE
+Asterias rubens,IV,TRUE
+Asteroidea,IV,TRUE
+Astropecten irregularis,IV,TRUE
+Athanas nitescens,IV,TRUE
+Atylus,IV,TRUE
+Autolytus,IV,TRUE
+Buccinum undatum,IV,TRUE
+Bylgides sarsi,IV,TRUE
+Cancer pagurus,IV,TRUE
+Caprellidae,IV,TRUE
+Carcinus maenas,IV,TRUE
+Cerianthus lloydi,IV,TRUE
+Chaetoderma nitidulum,IV,TRUE
+Chaetognatha,IV,TRUE
+Cirolana cranchii,IV,TRUE
+Corystes cassivelaunus,IV,TRUE
+Crangon,IV,TRUE
+Crangon crangon,IV,TRUE
+Cuthona nana,IV,TRUE
+Cylichna cylindracea,IV,TRUE
+Diogenes pugilator,IV,TRUE
+Drilonereis filum,IV,TRUE
+Ebalia,IV,TRUE
+Ebalia cranchii,IV,TRUE
+Ebalia granulosa,IV,TRUE
+Ebalia tuberosa,IV,TRUE
+Ebalia tumefacta,IV,TRUE
+Edwardsia,IV,TRUE
+Edwardsia claparedii,IV,TRUE
+Elysia viridis,IV,TRUE
+Endeis spinosa,IV,TRUE
+Enipo kinbergi,IV,TRUE
+Epitonium clathratulum,IV,TRUE
+Eteone,IV,TRUE
+Eteone flava,IV,TRUE
+Eteone longa,IV,TRUE
+Eulalia bilineata,IV,TRUE
+Eulalia viridis,IV,TRUE
+Eumida,IV,TRUE
+Eumida sanguinea,IV,TRUE
+Eunereis,IV,TRUE
+Eunereis elitoralis,IV,TRUE
+Eunereis longissima,IV,TRUE
+Eunicida,IV,TRUE
+Eunoe nodosa,IV,TRUE
+Eurydice pulchra,IV,TRUE
+Eurydice spinigera,IV,TRUE
+Euspira catena,IV,TRUE
+Euspira pulchella,IV,TRUE
+Eusyllinae,IV,TRUE
+Exogone naidina,II,FALSE
+Gammaridae,IV,TRUE
+Gammarus,IV,TRUE
+Gammarus crinicornis,IV,TRUE
+Gammarus locusta,IV,TRUE
+Gammarus zaddachi,IV,TRUE
+Gastropoda,IV,TRUE
+Gastrosaccus,IV,TRUE
+Gastrosaccus spinifer,IV,TRUE
+Gattyana amondseni,IV,TRUE
+Gattyana cirrhosa,IV,TRUE
+Glycera,IV,TRUE
+Glycera alba,IV,TRUE
+Glycera lapidum,IV,TRUE
+Glycera unicornis,IV,TRUE
+Glycinde nordmanni,IV,TRUE
+Goneplax rhomboides,IV,TRUE
+Goniada maculata,IV,TRUE
+Goniadella bobrezkii,IV,TRUE
+Goniadidae,IV,TRUE
+Gyptis,IV,TRUE
+Harmothoe,IV,TRUE
+Harmothoe antilopes,IV,TRUE
+Harmothoe extenuata,IV,TRUE
+Harmothoe glabra,IV,TRUE
+Harmothoe imbricata,IV,TRUE
+Harmothoe impar,IV,TRUE
+Hediste diversicolor,IV,TRUE
+Hemigrapsus sanguineus,IV,TRUE
+Hemigrapsus takanoi,IV,TRUE
+Hesionura elongata,IV,TRUE
+Hippolyte varians,IV,TRUE
+Hydrozoa,IV,TRUE
+Hypereteone foliosa,IV,TRUE
+Hyperia,IV,TRUE
+Hyperiidea,IV,TRUE
+Idotea linearis,IV,TRUE
+Idotea neglecta,IV,TRUE
+Lepidepecreum longicornis,IV,TRUE
+Lepidonotus squamatus,IV,TRUE
+Liocarcinus,IV,TRUE
+Liocarcinus depurator,IV,TRUE
+Liocarcinus holsatus,IV,TRUE
+Liocarcinus marmoreus,IV,TRUE
+Liocarcinus navigator,IV,TRUE
+Lumbrineridae,IV,TRUE
+Lumbrineris,IV,TRUE
+Lumbrineris fragilis,IV,TRUE
+Lumbrineris latreilli,IV,TRUE
+Lumbrineris pseudofragilis,IV,TRUE
+Macropodia rostrata,IV,TRUE
+Malmgreniella,IV,TRUE
+Malmgreniella andreapolis,IV,TRUE
+Malmgreniella castanea,IV,TRUE
+Malmgreniella darbouxi,IV,TRUE
+Malmgreniella ljungmani,IV,TRUE
+Malmgreniella lunulata,IV,TRUE
+Malmgreniella marphysae,IV,TRUE
+Malmgreniella mcintoshi,IV,TRUE
+Menigrates obtusifrons,IV,TRUE
+Mesopodopsis slabberi,IV,TRUE
+Microprotopus maculatus,IV,TRUE
+Myrianida langerhansi,IV,TRUE
+Myrianida prolifera,IV,TRUE
+Nassarius reticulatus,IV,TRUE
+Natatolana borealis,IV,TRUE
+Natica,IV,TRUE
+Nemertea,IV,TRUE
+Nephrops norvegicus,IV,TRUE
+Nephtys,IV,TRUE
+Nephtys assimilis,IV,TRUE
+Nephtys caeca,IV,TRUE
+Nephtys cirrosa,IV,TRUE
+Nephtys hombergii,IV,TRUE
+Nephtys incisa,IV,TRUE
+Nephtys longosetosa,IV,TRUE
+Nereididae,IV,TRUE
+Nereis,IV,TRUE
+Nucella lapillus,IV,TRUE
+Onchidoris bilamellata,IV,TRUE
+Ophiura,IV,TRUE
+Ophiura albida,IV,TRUE
+Ophiura ophiura,IV,TRUE
+Orchomene,IV,TRUE
+Orchomene humilis,IV,TRUE
+Oxydromus flexuosus,IV,TRUE
+Paguridae,IV,TRUE
+Pagurus bernhardus,IV,TRUE
+Palaemon adspersus,IV,TRUE
+Palaemon elegans,IV,TRUE
+Palaemon macrodactylus,IV,TRUE
+Peachia cylindrica,IV,TRUE
+Philine,IV,TRUE
+Philocheras bispinosus,IV,TRUE
+Philocheras trispinosus,IV,TRUE
+Pholoe,IV,TRUE
+Pholoe baltica,IV,TRUE
+Pholoe minuta,IV,TRUE
+Phoxichilidium femoratum,IV,TRUE
+Phtisica marina,IV,TRUE
+Phyllodoce,IV,TRUE
+Phyllodoce groenlandica,IV,TRUE
+Phyllodoce laminosa,IV,TRUE
+Phyllodoce lineata,IV,TRUE
+Phyllodoce maculata,IV,TRUE
+Phyllodoce mucosa,IV,TRUE
+Phyllodoce rosea,IV,TRUE
+Phyllodocidae,IV,TRUE
+Phyllodocinae,IV,TRUE
+Pilumnus hirtellus,IV,TRUE
+Pinnotheres pisum,IV,TRUE
+Pisidia longicornis,IV,TRUE
+Podarkeopsis capensis,IV,TRUE
+Polynoidae,IV,TRUE
+Portumnus latipes,IV,TRUE
+Priapulida,IV,TRUE
+Processa,IV,TRUE
+Processa edulis crassipes,IV,TRUE
+Processa modica,IV,TRUE
+Processa modica modica,IV,TRUE
+Processa nouveli holthuisi,IV,TRUE
+Processa parva,IV,TRUE
+Propebela turricula,IV,TRUE
+Protodorvillea kefersteini,IV,TRUE
+Psammechinus miliaris,IV,TRUE
+Pycnogonidae,IV,TRUE
+Pycnogonum litorale,IV,TRUE
+Retusa obtusa,IV,TRUE
+Roxania utriculus,IV,TRUE
+Sagartia troglodytes,IV,TRUE
+Sagartiidae,IV,TRUE
+Sagartiogeton undatus,IV,TRUE
+Scaphander lignarius,IV,TRUE
+Scoletoma tetraura,IV,TRUE
+Scoloplos,IV,TRUE
+Scoloplos armiger,IV,TRUE
+Scopelocheirus hopei,IV,TRUE
+Sigalion,IV,TRUE
+Sigalion mathildae,IV,TRUE
+Solenogastres,IV,TRUE
+Sphaerosyllis,IV,TRUE
+Sthenelais,IV,TRUE
+Sthenelais boa,IV,TRUE
+Sthenelais limicola,IV,TRUE
+Streptodonta pterochaeta,IV,TRUE
+Syllidae,IV,TRUE
+Syllis,IV,TRUE
+Syllis armillaris,IV,TRUE
+Syllis gracilis,IV,TRUE
+Tergipes tergipes,IV,TRUE
+Thia scutellata,IV,TRUE
+Tubulanus polymorphus,IV,TRUE
+Turbellaria,IV,TRUE
+Acanthocardia,I,FALSE
+Acanthocardia echinata,I,FALSE
+Acanthocardia paucicostata,I,FALSE
+Acrocnida brachiata,I,FALSE
+Alcyonidium,I,FALSE
+Ampelisca,I,FALSE
+Ampelisca brevicornis,I,FALSE
+Ampelisca diadema,I,FALSE
+Ampelisca macrocephala,I,FALSE
+Ampelisca spinipes,I,FALSE
+Ampelisca tenuicornis,I,FALSE
+Amphibalanus improvisus,I,FALSE
+Amphipholis squamata,I,FALSE
+Amphiura,I,FALSE
+Amphiura chiajei,I,FALSE
+Amphiura filiformis,I,FALSE
+Amphiuridae,I,FALSE
+Arctica islandica,I,FALSE
+Ascidiacea,I,FALSE
+Ascidiella aspersa,I,FALSE
+Astarte,I,FALSE
+Astarte montagui,I,FALSE
+Austrominius modestus,I,FALSE
+Balanus crenatus,I,FALSE
+Botryllus schlosseri,I,FALSE
+Branchiostoma lanceolatum,I,FALSE
+Cardiidae,I,FALSE
+Cerastoderma edule,I,FALSE
+Cerastoderma glaucum,I,FALSE
+Chaetopterus,I,FALSE
+Chaetopterus variopedatus,I,FALSE
+Chamelea,I,FALSE
+Chamelea striatula,I,FALSE
+Chlamys,I,FALSE
+Chlamys varia,I,FALSE
+Chone,I,FALSE
+Chone duneri,I,FALSE
+Chone infundibuliformis,I,FALSE
+Ciona intestinalis,I,FALSE
+Cliona celata,I,FALSE
+Clytia hemisphaerica,I,FALSE
+Cochlodesma praetenue,I,FALSE
+Conopeum reticulum,I,FALSE
+Corbula gibba,I,FALSE
+Crassostrea gigas,I,FALSE
+Crepidula fornicata,I,FALSE
+Cucumaria frondosa,I,FALSE
+Diadumene cincta,I,FALSE
+Diplodonta rotundata,I,FALSE
+Donax vittatus,I,FALSE
+Dosinia,I,FALSE
+Dosinia exoleta,I,FALSE
+Dosinia lupinus,I,FALSE
+Electra pilosa,I,FALSE
+Ensis,I,FALSE
+Ensis directus,I,FALSE
+Ensis ensis,I,FALSE
+Ensis magnus,I,FALSE
+Ensis minor,I,FALSE
+Ensis siliqua,I,FALSE
+Entoprocta,I,FALSE
+Ficopomatus enigmaticus,I,FALSE
+Gari fervensis,I,FALSE
+Goodallia triangularis,I,FALSE
+Gouldia minima,I,FALSE
+Halichondria panicea,I,FALSE
+Heteromysis microps,I,FALSE
+Hiatella arctica,I,FALSE
+Hydractinia echinata,I,FALSE
+Jassa falcata,I,FALSE
+Jassa marmorata,I,FALSE
+Kellia suborbicularis,I,FALSE
+Lepton squamosum,I,FALSE
+Leptopentacta elongata,I,FALSE
+Lutraria lutraria,I,FALSE
+Mactra,I,FALSE
+Mactra stultorum,I,FALSE
+Magelona mirabilis,I,FALSE
+Megaluropus agilis,I,FALSE
+Membranipora membranacea,I,FALSE
+Metridium senile,I,FALSE
+Modiolus,I,FALSE
+Modiolus modiolus,I,FALSE
+Molgula manhattensis,I,FALSE
+Molgula oculata,I,FALSE
+Musculus,I,FALSE
+Musculus discors,I,FALSE
+Mya,I,FALSE
+Mya arenaria,I,FALSE
+Mya truncata,I,FALSE
+Myrtea spinifera,I,FALSE
+Mysia undata,I,FALSE
+Mytilidae,I,FALSE
+Mytilus,I,FALSE
+Mytilus edulis,I,FALSE
+Nebalia bipes,I,FALSE
+Obelia bidentata,I,FALSE
+Obelia dichotoma,I,FALSE
+Obelia longissima,I,FALSE
+Ophiothrix fragilis,I,FALSE
+Ostrea edulis,I,FALSE
+Pelonaia corrugata,I,FALSE
+Petricolaria pholadiformis,I,FALSE
+Phaxas pellucidus,I,FALSE
+Phoronida,I,FALSE
+Phoronidae,I,FALSE
+Pomatoceros triqueter,I,FALSE
+Pseudopotamilla reniformis,I,FALSE
+Sabella pavonina,I,FALSE
+Sabella spallanzanii,I,FALSE
+Saxicavella jeffreysi,I,FALSE
+Sphenia binghami,I,FALSE
+Spirorbis tridentatus,I,FALSE
+Spisula,I,FALSE
+Spisula elliptica,I,FALSE
+Spisula solida,I,FALSE
+Spisula subtruncata,I,FALSE
+Stenothoe marina,I,FALSE
+Striarca lactea,I,FALSE
+Styela clava,I,FALSE
+Tellimya ferruginosa,I,FALSE
+Tellimya tenella,I,FALSE
+Thracia,I,FALSE
+Thracia convexa,I,FALSE
+Thracia papyracea,I,FALSE
+Thracia pubescens,I,FALSE
+Thyasira flexuosa,I,FALSE
+Triticella flava,I,FALSE
+Tunicata,I,FALSE
+Turritella communis,I,FALSE
+Upogebia,I,FALSE
+Upogebia deltaura,I,FALSE
+Upogebia stellata,I,FALSE
+Venerupis corrugata,I,FALSE
+Venus,I,FALSE
+Abludomelita obtusata,II,FALSE
+Aonides,II,FALSE
+Atherospio disticha,II,FALSE
+Atherospio guillei,II,FALSE
+Bodotria arenosa,II,FALSE
+Bodotria pulchella,II,FALSE
+Bodotria scorpioides,II,FALSE
+Brada villosa,II,FALSE
+Campylaspis glabra,II,FALSE
+Cumopsis goodsir,II,FALSE
+Diastylis,II,FALSE
+Diastylis bradyi,II,FALSE
+Diastylis laevis,II,FALSE
+Diastylis lucifera,II,FALSE
+Diastylis rathkei,II,FALSE
+Diastylis rugosa,II,FALSE
+Diastylis tumida,II,FALSE
+Dipolydora coeca,II,FALSE
+Eudorella,II,FALSE
+Eudorella emarginata,II,FALSE
+Parexogone hebes,II,FALSE
+Exogone,II,FALSE
+Exogone dispar,II,FALSE
+Galathowenia oculata,II,FALSE
+Gammaropsis,II,FALSE
+Gammaropsis maculata,II,FALSE
+Haustorius arenarius,II,FALSE
+Holothuriidae,II,FALSE
+Holothuroidea,II,FALSE
+Iphinoe trispinosa,II,FALSE
+Kurtiella bidentata,II,FALSE
+Lanice,II,FALSE
+Laonice bahusiensis,II,FALSE
+Laonice cirrata,II,FALSE
+Lysilla loveni,II,FALSE
+Magelona,II,FALSE
+Magelona alleni,II,FALSE
+Malacoceros fuliginosus,II,FALSE
+Marenzelleria viridis,II,FALSE
+Minuspio,II,FALSE
+Minuspio multibranchiata,II,FALSE
+Monopseudocuma gilsoni,II,FALSE
+Myriochele danielsseni,II,FALSE
+Nototropis falcatus,II,FALSE
+Owenia,II,FALSE
+Owenia fusiformis,II,FALSE
+Pariambus typicus,II,FALSE
+Perioculodes longimanus,II,FALSE
+Petalosarsia declivis,II,FALSE
+Pherusa plumosa,II,FALSE
+Photis longicaudata,II,FALSE
+Poecilochaetus serpens,II,FALSE
+Polydora,II,FALSE
+Polydora ciliata,II,FALSE
+Polydora cornuta,II,FALSE
+Polygordius appendiculatus,II,FALSE
+Pontocrates altamarinus,II,FALSE
+Pontocrates arcticus,II,FALSE
+Pontocrates arenarius,II,FALSE
+Prionospio,II,FALSE
+Prionospio cirrifera,II,FALSE
+Prionospio steenstrupi,II,FALSE
+Pseudocuma,II,FALSE
+Pseudocuma longicorne,II,FALSE
+Pseudocuma simile,II,FALSE
+Pseudopolydora pulchra,II,FALSE
+Pygospio elegans,II,FALSE
+Scolelepis,II,FALSE
+Scolelepis bonnieri,II,FALSE
+Scolelepis foliosa,II,FALSE
+Scolelepis squamata,II,FALSE
+Scrobicularia plana,II,FALSE
+Spio,II,FALSE
+Spio decoratus,II,FALSE
+Spio filicornis,II,FALSE
+Spio goniocephala,II,FALSE
+Spio martinensis,II,FALSE
+Spio symphyta,II,FALSE
+Spiophanes,II,FALSE
+Spiophanes bombyx,II,FALSE
+Spiophanes kroyeri,II,FALSE
+Streblospio shrubsolii,II,FALSE
+Streptosyllis websteri,II,FALSE
+Synchelidium haplocheles,II,FALSE
+Westwoodilla caecula,II,FALSE
+Abra,III,FALSE
+Abra alba,III,FALSE
+Abra nitida,III,FALSE
+Abra prismatica,III,FALSE
+Abra tenuis,III,FALSE
+Ampharete,III,FALSE
+Ampharete acutifrons,III,FALSE
+Ampharete finmarchica,III,FALSE
+Ampharetidae,III,FALSE
+Amphitrite,III,FALSE
+Angulus fabula,III,FALSE
+Angulus pygmaeus,III,FALSE
+Angulus tenuis,III,FALSE
+Aonides paucibranchiata,III,FALSE
+Aora gracilis,III,FALSE
+Aoridae,III,FALSE
+Aphelochaeta marioni,III,FALSE
+Apherusa,III,FALSE
+Apherusa bispinosa,III,FALSE
+Apherusa clevei,III,FALSE
+Apherusa jurinei,III,FALSE
+Apherusa ovalipes,III,FALSE
+Apistobranchus tullbergi,III,FALSE
+Aricidea suecica,III,FALSE
+Caulleriella,III,FALSE
+Caulleriella killariensis,III,FALSE
+Chaetozone,III,FALSE
+Chaetozone christiei,III,FALSE
+Chaetozone setosa,III,FALSE
+Cirratulidae,III,FALSE
+Cirratulus cirratus,III,FALSE
+Corophium,III,FALSE
+Corophium multisetosum,III,FALSE
+Corophium volutator,III,FALSE
+Diplocirrus glaucus,III,FALSE
+Echiura,III,FALSE
+Echiuridae,III,FALSE
+Echiurus,III,FALSE
+Echiurus echiurus,III,FALSE
+Eudorella truncatula,III,FALSE
+Eudorellopsis deformis,III,FALSE
+Eupolymnia nebulosa,III,FALSE
+Golfingia,III,FALSE
+Golfingia elongata,III,FALSE
+Golfingia vulgaris,III,FALSE
+Lanice conchilega,III,FALSE
+Leptognathia,III,FALSE
+Levinsenia gracilis,III,FALSE
+Littorina littorea,III,FALSE
+Lysippe,III,FALSE
+Macoma balthica,III,FALSE
+Magelona filiformis,III,FALSE
+Magelona johnstoni,III,FALSE
+Magelona papillicornis,III,FALSE
+Medicorophium affine,III,FALSE
+Monocorophium insidiosum,III,FALSE
+Neoamphitrite figulus,III,FALSE
+Paraonis fulgens,III,FALSE
+Peringia ulvae,III,FALSE
+Phascolion,III,FALSE
+Phascolion strombus,III,FALSE
+Pherusa flabellata,III,FALSE
+Polycirrus,III,FALSE
+Polycirrus medusa,III,FALSE
+Siphonoecetes kroyeranus,III,FALSE
+Sipuncula,III,FALSE
+Sipunculidae,III,FALSE
+Sosane,III,FALSE
+Synchelidium maculatum,III,FALSE
+Tanaidacea,III,FALSE
+Tanaissus lilljeborgi,III,FALSE
+Tanaopsis graciloides,III,FALSE
+Angulus,III,FALSE
+Terebellida,III,FALSE
+Terebellidae,III,FALSE
+Terebellides stroemii,III,FALSE
+Thelepus cincinnatus,III,FALSE
+Thysanocardia procera,III,FALSE
+Travisia forbesii,III,FALSE
+Trichobranchus roseus,III,FALSE
+Unciola planipes,III,FALSE
+Alvania lactea,IV,FALSE
+Amphilochus,IV,FALSE
+Amphilochus neapolitanus,IV,FALSE
+Arenicola defodiens,IV,FALSE
+Arenicola marina,IV,FALSE
+Argissa hamatipes,IV,FALSE
+Aricidea minuta,IV,FALSE
+Bathyporeia,IV,FALSE
+Bathyporeia elegans,IV,FALSE
+Bathyporeia gracilis,IV,FALSE
+Bathyporeia guilliamsoniana,IV,FALSE
+Bathyporeia nana,IV,FALSE
+Bathyporeia pelagica,IV,FALSE
+Bathyporeia pilosa,IV,FALSE
+Bathyporeia sarsi,IV,FALSE
+Bathyporeia tenuipes,IV,FALSE
+Brissopsis lyrifera,IV,FALSE
+Callianassa,IV,FALSE
+Callianassa subterranea,IV,FALSE
+Capitella,IV,FALSE
+Capitella capitata,IV,FALSE
+Capitellida,IV,FALSE
+Capitellidae,IV,FALSE
+Cerebratulus,IV,FALSE
+Cerebratulus marginatus,IV,FALSE
+Cheirocratus sundevallii,IV,FALSE
+Clymenura,IV,FALSE
+Clymenura lankesteri,IV,FALSE
+Cossura longocirrata,IV,FALSE
+Echinocardium,IV,FALSE
+Echinocardium cordatum,IV,FALSE
+Echinocardium flavescens,IV,FALSE
+Echinocyamus pusillus,IV,FALSE
+Ennucula tenuis,IV,FALSE
+Enteropneusta,IV,FALSE
+Euclymene droebachiensis,IV,FALSE
+Euzonus flabelligerus,IV,FALSE
+Grania vikinga,IV,FALSE
+Harpinia,IV,FALSE
+Harpinia antennaria,IV,FALSE
+Harpinia crenulata,IV,FALSE
+Harpinia laevis,IV,FALSE
+Harpinia pectinata,IV,FALSE
+Heteromastus filiformis,IV,FALSE
+Hippomedon denticulatus,IV,FALSE
+Hyala vitrea,IV,FALSE
+Labidoplax buski,IV,FALSE
+Lagis koreni,IV,FALSE
+Leiochone,IV,FALSE
+Lepidochitona cinerea,IV,FALSE
+Leptosynapta inhaerens,IV,FALSE
+Leucothoe lilljeborgi,IV,FALSE
+Limnodriloides scandinavicus,IV,FALSE
+Lucinoma borealis,IV,FALSE
+Maldanidae,IV,FALSE
+Mediomastus fragilis,IV,FALSE
+Microphthalmus,IV,FALSE
+Microphthalmus fragilis,IV,FALSE
+Microphthalmus sczelkowii,IV,FALSE
+Microphthalmus similis,IV,FALSE
+Nicomache lumbricalis,IV,FALSE
+Notomastus,IV,FALSE
+Notomastus latericeus,IV,FALSE
+Nucula,IV,FALSE
+Nucula nitidosa,IV,FALSE
+Nucula nucleus,IV,FALSE
+Oligochaeta,IV,FALSE
+Ophelia,IV,FALSE
+Ophelia limacina,IV,FALSE
+Ophelia rathkei,IV,FALSE
+Opheliidae,IV,FALSE
+Ophelina acuminata,IV,FALSE
+Orbinia,IV,FALSE
+Orbinia sertulata,IV,FALSE
+Paramphilochoides odontonyx,IV,FALSE
+Pectinaria,IV,FALSE
+Pectinaria auricoma,IV,FALSE
+Pectinaria belgica,IV,FALSE
+Pectinaria koreni,IV,FALSE
+Pestarella tyrrhena,IV,FALSE
+Pisione remota,IV,FALSE
+Polyphysia crassa,IV,FALSE
+Polyplacophora,IV,FALSE
+Potamopyrgus antipodarum,IV,FALSE
+Rhodine,IV,FALSE
+Rhodine loveni,IV,FALSE
+Scalibregma inflatum,IV,FALSE
+Sphaerodoridium,IV,FALSE
+Sphaerodorum gracilis,IV,FALSE
+Sphaerosyllis hystrix,IV,FALSE
+Tornus subcarinatus,IV,FALSE
+Tryphosites longipes,IV,FALSE
+Tubificidae,IV,FALSE
+Tubificoides diazi,IV,FALSE
+Urothoe,IV,FALSE
+Urothoe brevicornis,IV,FALSE
+Urothoe elegans,IV,FALSE
+Urothoe marina,IV,FALSE
+Urothoe poseidonis,IV,FALSE
+Achelia echinata,IV,TRUE
+Adontorhina similis,IV,FALSE
+Akanthophoreus gracilis,III,FALSE
+Ampelisca gibba,I,FALSE
+Ampelisca typica,I,FALSE
+Anaitides groenlandica,IV,TRUE
+Anobothrus gracilis,III,FALSE
+Anomiidae,I,FALSE
+Anoplodactylus petiolatus,IV,TRUE
+Aphelochaeta,III,FALSE
+Apistobranchus,II,FALSE
+Aricidea,III,FALSE
+Aricidea roberti,III,FALSE
+Astartidae,I,FALSE
+Autonoe longipes,III,FALSE
+Axinulus croulinensis,IV,FALSE
+Caudofoveata,IV,TRUE
+Cephalaspidea,IV,TRUE
+Ceratocephale loveni,IV,TRUE
+Cerianthidae,IV,TRUE
+Cheirocratus,IV,FALSE
+Cirratulus,III,FALSE
+Cirriformia tentaculata,III,FALSE
+Dipolydora caulleryi,II,FALSE
+Edwardsiidae,IV,TRUE
+Enchytraeidae,IV,FALSE
+Euclymene,IV,FALSE
+Eumida bahusiensis,IV,TRUE
+Eusyllis blomstrandi,IV,TRUE
+Exogone verugera,II,FALSE
+Glycera capitata,IV,TRUE
+Glycera tridactyla,IV,TRUE
+Glyceridae,IV,TRUE
+Golfingiidae,III,FALSE
+Grania,IV,FALSE
+Hesionidae,IV,TRUE
+Hydroides norvegicus,I,FALSE
+Idotea pelagica,IV,TRUE
+Janira maculosa,IV,FALSE
+Laonice,II,FALSE
+Levinsenia,III,FALSE
+Lysianassidae,IV,TRUE
+Malmgreniella arenicolae,IV,TRUE
+Modiolula phaseolina,I,FALSE
+Molgulidae,I,FALSE
+Myriochele,II,FALSE
+Naticidae,IV,TRUE
+Nephasoma,III,FALSE
+Nephtyidae,IV,TRUE
+Nephtys hystricis,IV,TRUE
+Nephtys kersivalensis,IV,TRUE
+Nudibranchia,IV,TRUE
+Ophelia borealis,IV,FALSE
+Ophelina,IV,FALSE
+Ophiocten affinis,IV,TRUE
+Ophiuridae,IV,TRUE
+Ophryotrocha,IV,TRUE
+Orbiniidae,IV,FALSE
+Oweniidae,II,FALSE
+Paradoneis,IV,FALSE
+Parajassa pelagica,I,FALSE
+Parapleustes assimilis,IV,FALSE
+Parougia eliasoni,IV,TRUE
+Parvicardium,I,FALSE
+Parvicardium minimum,I,FALSE
+Parvicardium scabrum,I,FALSE
+Pectinariidae,IV,FALSE
+Pholoe assimilis,IV,TRUE
+Pholoe inornata,IV,TRUE
+Pholoe pallida,IV,TRUE
+Phoronis,I,FALSE
+Pista cristata,III,FALSE
+Polygordiidae,II,FALSE
+Polygordius,II,FALSE
+Retusa,IV,TRUE
+Sabellaria spinulosa,I,FALSE
+Sabellidae,I,FALSE
+Scolelepis korsuni,II,FALSE
+Scolelepis tridentata,II,FALSE
+Serpulidae,I,FALSE
+Spatangoida,IV,FALSE
+Sphaerosyllis taylori,II,FALSE
+Spio armata,II,FALSE
+Synaptidae,IV,FALSE
+Tharyx,III,FALSE
+Thyasira,IV,FALSE
+Thyasiridae,IV,FALSE
+Timoclea ovata,I,FALSE
+Veneroida,I,FALSE
+Yoldiella,II,FALSE
+Yoldiella philippiana,II,FALSE

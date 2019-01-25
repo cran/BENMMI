@@ -1,0 +1,18 @@
+The weights for each combination of `r title_text_plur` are given in the first `r number_of_indicators` columns of the table below. The remaining columns give the coefficients b<sub>0</sub>, b<sub>1</sub>, and b<sub>2</sub>, the pseudo r^2, _i.e._ a rough estimate of the amount of variation in the data that has been explained by the model, and an indicator indicating the convergence of the model. The table has been sorted by pseudo r^2 (best models at the top).
+
+<br>
+```{r results='asis'}
+d <- S
+names(d)[1:number_of_indicators] <- paste0(
+    "w", 1:number_of_indicators, 
+    " (", sub(pattern = "_STAR$", replacement = "*", x = names(d)[1:number_of_indicators]), ")")
+
+d %>%
+    xtable(digits = c(0L, rep.int(x = 3L, times = ncol(d) - 1L), 0L)) %>%
+    print(type = "html", include.rownames = FALSE)
+```
+<br>
+
+The slope of each curve is given by:
+
+b<sub>0</sub> &times; b<sub>1</sub> &times; exp(b<sub>2</sub> &times; PRESSURE)

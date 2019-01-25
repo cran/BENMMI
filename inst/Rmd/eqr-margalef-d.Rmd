@@ -1,0 +1,4 @@
+### Margalef's Diversity
+
+`r settings$legendtext`(_D_) = ( _D_<sub>ass</sub> - _D_<sub>bad</sub> ) / ( _D_<sub>ref</sub> - _D_<sub>bad</sub> )
+

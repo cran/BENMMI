@@ -1,0 +1,3 @@
+### Species richness
+
+`r settings$legendtext`(_S_) = ( _S_<sub>ass</sub> - _S_<sub>bad</sub> ) / ( _S_<sub>ref</sub> - _S_<sub>bad</sub> )

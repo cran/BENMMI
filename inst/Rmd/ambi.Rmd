@@ -1,0 +1,35 @@
+
+```{r child="default-ambi.Rmd", eval=is.null(d_ambi)}
+```
+
+```{r child="user-ambi.Rmd", eval=!is.null(d_ambi)}
+```
+
+```{r, eval=!is.null(d_ambi)}
+d_mmi <- d_mmi %>%
+    left_join(d_ambi, by = "TAXON") %>%
+    rename(AMBI_GROUP = GROUP)
+```
+
+```{r}
+if (is.null(d_ambi)) {
+    d <- d_mmi %>% 
+        filter(!has_ambi(taxon = TAXON)) %>%
+        select(TAXON) %>%
+        group_by(TAXON) %>%
+        summarise(N_RECORDS = n())
+} else {
+    d <- d_mmi %>% 
+        filter(!has_ambi(taxon = TAXON, group = AMBI_GROUP)) %>%
+        select(TAXON) %>%
+        group_by(TAXON) %>%
+        summarise(N_RECORDS = n())
+}
+```
+
+```{r results='asis', eval=(nrow(d)>0L)}
+cat(sprintf("\nThe AMBI-class is missing for the following %i taxa:\n", nrow(d)))
+d %>%
+    xtable %>%
+    print(type = "html",  include.rownames = FALSE)
+```

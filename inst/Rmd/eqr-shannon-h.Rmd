@@ -1,0 +1,3 @@
+### Shannon's Index
+
+`r settings$legendtext`(_H'_) = ( _H'_<sub>ass</sub> - _H'_<sub>bad</sub> ) / ( _H'_<sub>ref</sub> - _H'_<sub>bad</sub> )

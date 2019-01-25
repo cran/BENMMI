@@ -1,0 +1,22 @@
+### Study area
+
+```{r}
+to_log("INFO", "Entering subsection 'Map'...")
+```
+
+
+The map below shows the location of the samples.
+
+<figure>
+```{r, fig.width=5, fig.height=5, out.width=600, dpi=600, warning=FALSE}
+g <- ggplot(data = d_mmi %>% select(LONG, LAT) %>% distinct) +
+    geom_point(mapping = aes(x = LONG, y = LAT), 
+               colour = "black", alpha = 0.3) +
+    coord_equal() +
+    theme_bw()
+suppressWarnings(print(g))
+```
+<figcaption>Map of sampling locations.</figcaption>
+</figure>
+<br>
+<br>

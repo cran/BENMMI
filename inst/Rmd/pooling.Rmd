@@ -1,0 +1,60 @@
+
+```{r}
+
+# number of pooling runs
+n_runs <- 10L
+
+# pooling
+d <- replicate(n_runs, {
+    d_mmi %>%
+        group_by(OBJECTID, HABITAT, YEAR) %>%
+        mutate(
+            POOL_ID = pool(
+                sample_id = ID, 
+                area = AREA, 
+                target_area = settings$pooling$targetarea
+            )
+        ) %>%
+        ungroup %>%
+        select(POOL_ID)
+    }
+)
+
+# add names to each pool run
+names(d) <- paste(
+    "POOL_RUN", 
+    formatC(x = 1:n_runs, width = nchar(n_runs), flag = "0"), 
+    sep = ""
+)
+
+# add pools to d_mmi data set
+d_mmi <- d_mmi %>% 
+    bind_cols(d %>% as_data_frame) %>% 
+    as_data_frame 
+
+
+# store table with pooling information
+tmp <- d_mmi %>%
+    select(OBJECTID, SAMPLEID, DATE, starts_with("POOL_RUN")) %>%
+    distinct
+
+to_log("INFO", "storing pooling results...")
+write.csv(x = tmp, file = settings$files$pooling, row.names = FALSE, na = "")
+to_log("INFO", "pooling results have been stored.")
+
+tmp <- tmp %>% 
+    select(starts_with("POOL_RUN")) %>% 
+    as.matrix
+
+```
+
+The samples in the MMI-input file have been pooled. An average of `r round(100 * sum(is.na(tmp))/ length(tmp), 2)` percent of the samples could not be pooled in each run. These samples have been removed. Each sample has been pooled for at least `r min(apply(X = tmp, MARGIN = 1, FUN = function(x) {sum(!is.na(x))}))` out of 10 times.  The results have been written to `r basename(settings$files$pooling)`.
+
+
+```{r}
+# convert data to 'long'-format and remove samples that could not be pooled
+d_mmi <- d_mmi %>% 
+    gather(key = "POOL_RUN", value = "POOL_ID", starts_with("POOL_RUN")) %>%
+    mutate(POOL_RUN = parse_number(POOL_RUN) %>% as.integer) %>%
+    filter(!is.na(POOL_ID))
+```

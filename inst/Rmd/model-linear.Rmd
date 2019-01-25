@@ -1,0 +1,116 @@
+
+```{r child="weights-optim-linear.Rmd", eval=needs_optimization}
+```
+
+```{r}
+# remove duplicates
+W <- W %>% 
+    round(digits = 3) %>%
+    {./rowSums(.)} %>%
+    unique
+
+# extract EQRs of interest
+V <- as.matrix(d_ind[, colnames(W)])
+```
+
+```{r}
+to_log("INFO", "Entering subsection 'summary stats for all combinations of weights'...")
+```
+
+
+```{r, eval=has_pressure}
+d <- apply(
+    X = W,
+    MARGIN = 1L,
+    FUN = function(x) {
+        (MMI_STAR ~ P) %>%
+        lm(data = data.frame(MMI_STAR = drop(V %*% x), P = d_ind$PRESSURE)) %>%
+        summary
+    }
+)
+
+S <- cbind(W,
+    do.call(
+        what = "rbind", 
+        args = lapply(
+            X = d, 
+            FUN = function(x) {
+                b <- coefficients(x)
+                c(
+                    b0 = b["(Intercept)", "Estimate"],
+                    b1 = if (nrow(b) == 1L) {NA_real_} else {b["P", "Estimate"]}, 
+                    r2_adj = x$adj.r.squared, 
+                    r_adj = suppressWarnings(sqrt(x$adj.r.squared)),
+                    p_value = if (is.null(x$fstatistic)) {
+                            NA_real_ 
+                        } else {
+                            pf( # see stats:::print.summary.lm
+                                q   = x$fstatistic[1L],
+                                df1 = x$fstatistic[2L], 
+                                df2 = x$fstatistic[3L], 
+                                lower.tail = FALSE
+                            ) %>% as.numeric
+                        }
+                )
+            }
+        )
+    )
+) %>%
+    as.data.frame %>%
+    arrange(desc(r2_adj))
+
+# check if slopes are available
+optimization_failed <- all(is.na(S$b1)) 
+if (needs_optimization && optimization_failed) {
+    to_log("ERROR", 
+        sprintf(
+            "Optimization failed.\nCheck PRESSURE column in %s",
+            sQuote(basename(settings$files$benthos))
+        )
+    )
+}
+```
+
+```{r child="weights-stats-table-linear.Rmd", eval=has_pressure && !optimization_failed}
+```
+
+```{r child="plot-eqr-pressure-linear.Rmd", eval=has_pressure && !optimization_failed}
+```
+
+
+
+```{r}
+if (needs_optimization) {
+    weights <- as.matrix(S)[1, 1:number_of_indicators]
+    weights <- weights[weights > 0]
+    weights_text <- round(weights, 3)
+    names(weights_text) <- sub(pattern = "_STAR$", replacement = "*", x = names(weights_text))
+} else {
+    weights <- settings$weights
+    names(weights) <- indicators_EQR
+    weights_text <- attr(settings$weights, "character")
+    if (is.null(weights_text)) {
+        weights_text <- round(settings$weights, 3)
+    }
+    names(weights_text) <- paste0(indicators, "*")
+}
+```
+
+`r if(needs_optimization){paste("The optimized", title_text, "is:\n")}else{paste("The", title_text, "based on user-specified weights is:\n")}`
+
+MMI* = `r paste(weights_text, names(weights_text), collapse = " + ", sep = " &times; ") `
+
+```{r}
+d_ind$MMI_STAR <- drop(V[, names(weights), drop = FALSE] %*% weights)
+```
+
+
+`r if(has_pressure && !optimization_failed){"Summary statistics of this model are given below:\n"}else{"\n"}`
+
+```{r, eval=has_pressure && !optimization_failed}
+(MMI_STAR ~ PRESSURE) %>%
+    lm(data = d_ind) %>% 
+    summary
+```
+<br>
+<br>

@@ -1,0 +1,5 @@
+### Natural logarithm of the total abundance
+
+The natural logarithm of the total abundance is given by:
+
+LNN = ln(_N_ + 1)

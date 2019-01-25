@@ -1,0 +1,23 @@
+### Study area
+
+```{r}
+to_log("INFO", "Entering subsection 'Map'...")
+```
+
+
+The plot below gives the spatial distribution of pressure values (`r sprintf("%s, %s", settings$pressure$name, settings$pressure$unit)`).
+
+<figure>
+```{r, fig.width=6, fig.height=5, out.width=600, dpi=600, warning=FALSE}
+g <- ggplot(data = d_mmi %>% select(LONG, LAT, PRESSURE) %>% distinct) +
+    geom_point(mapping = aes(x = LONG, y = LAT, size = PRESSURE), 
+               colour = "black", alpha = 0.3) +
+    scale_size_area(name = "pressure") +
+    coord_equal() +
+    theme_bw()
+suppressWarnings(print(g))
+```
+<figcaption>Map of the pressure values.</figcaption>
+</figure>
+<br>
+<br>

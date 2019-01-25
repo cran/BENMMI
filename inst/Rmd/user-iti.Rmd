@@ -1,0 +1,3 @@
+The following ITI-file has been provided by the user: `r sQuote(basename(settings$files$iti))`. The internal ITI-list will be used for taxa not available in `r sQuote(basename(settings$files$iti))`.
+
+Note: A copy of this internal ITI-list is available in the 'REF-FILES'-directory, and can also be obtained by calling the function `benthos::get_iti()`.

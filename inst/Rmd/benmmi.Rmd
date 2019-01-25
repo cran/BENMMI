@@ -1,0 +1,1010 @@
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(
+    echo = FALSE,
+    comment = NA,
+    quiet = TRUE,
+    progress = FALSE,
+    tidy = FALSE,
+    cache = FALSE,
+    message = FALSE,
+    error = FALSE, # FALSE: do not preserve errors. Always stop execution.
+    warning = TRUE
+)
+options(width = 110)
+
+# attach packages
+library(readr)
+library(purrr)
+```
+
+```{r}
+# define variables
+indicators <- toupper(settings$indicators)
+number_of_indicators <- length(indicators)
+has_pressure <- !is.null(settings$pressure)
+needs_optimization <- is.null(settings$weights) && has_pressure
+
+title_text <- if (tolower(settings$legendtext) == "eqr") {
+        "EQR"
+    } else {
+        "normalized index"
+    }
+title_text_plur <- if (tolower(settings$legendtext) == "eqr") {
+        "EQRs"
+    } else {
+        "normalized indices"
+    }
+Title_text <- if (tolower(settings$legendtext) == "eqr") {
+        "EQR"
+    } else {
+        "Normalized index"
+    }
+
+# add postfix _STAR to indicators. Should be converted to * in plots
+# (NB: using * directly is not possible in model formulas)
+indicators_EQR <- paste0(indicators, "_STAR")
+
+```
+
+
+# BENMMI benthos data analysis report
+
+_`r settings$title`_
+
+_BENMMI-package version `r packageVersion("BENMMI")` (`r packageDescription("BENMMI", fields = "Date")`)_
+
+
+
+
+## Data Files and Settings
+
+```{r}
+to_log("INFO", "Entering section 'Data Files and Settings'...")
+```
+
+
+
+
+
+
+- Indices: `r toString(toupper(settings$indicators))`
+- Pressure: `r if (has_pressure) {sprintf("%s (%s)", settings$pressure$name, settings$pressure$unit)} else {"not specified"}`
+- Time stamp: `r format(Sys.time())` 
+- User name: `r settings$user`
+- Input directory: `r dirname(settings$files$benthos)`
+    - benthos-file: `r basename(settings$files$benthos)`
+- Reference directory: `r dirname(settings$files$taxa)`
+    - Species names-file: `r basename(settings$files$taxa)`
+    - Taxonomic groups to exclude: `r basename(settings$files$groupstoexclude)`
+    - Habitats-file: `r basename(settings$files$habitats)`
+    - AMBI-file (user-defined): `r if ("ambi" %in% settings$indicators) {if (is.null(d_ambi)) {"not specified"} else {basename(settings$files$ambi)}} else {"not applicable"}`
+    - Version default AMBI-data: `r if ("ambi" %in% settings$indicators) {"November 2014"} else {"not applicable"}`
+    - ITI-file (user-defined): `r if ("iti" %in% settings$indicators) {basename(settings$files$iti)} else {"not applicable"}`
+- Output directory: `r dirname(settings$files$out_habitat)`
+    - Output file tidy data: `r basename(settings$files$out_tidy)`
+    - Output file habitat-level: `r basename(settings$files$out_habitat)`
+    - Output file object-level: `r basename(settings$files$out_objectid)`
+    - Output file groups-level: `r basename(settings$files$out_group)`
+    - Output file ITI: `r basename(settings$files$out_iti)`
+    - Output file pooling information: `r if (settings$pooling$enabled) {basename(settings$files$pooling)} else {"not applicable"}`
+    - Log file: `r basename(settings$files$log)`
+    - Report file: `r basename(settings$files$report)`
+- Pooling: `r if (settings$pooling$enabled) {"enabled"} else {"disabled"}`
+- Genus to species conversion: `r if (settings$genustospeciesconversion) {"enabled"} else {"disabled"}`
+- Confidence level: `r settings$confidencelevel`
+- model: `r settings$model`
+- Weights: `r toString_weights(settings$weights)`
+- legend text: `r settings$legendtext`
+
+
+## Selection of benthos records
+
+```{r}
+to_log("INFO", "Entering section 'Selection of benthos records'...")
+```
+
+
+
+- Number of records read: `r nrow(d_mmi)`
+
+```{r}
+# keep only records within the period of interest
+d_mmi <- d_mmi %>%
+    mutate(MONTH = DATE %>% format(format = "%m") %>% as.integer) %>%
+    filter(MONTH %>% between(settings$months[1], settings$months[2])) %>%
+    select(-MONTH)    
+```
+
+- Number of records between month `r settings$months[1]` and month `r settings$months[2]` : `r nrow(d_mmi)`.
+
+
+
+
+
+
+```{r child="groups-to-exclude.Rmd", eval=nrow(d_groups) != 0L}
+```
+
+```{r child="no-groups-to-exclude.Rmd", eval=nrow(d_groups) == 0L}
+```
+
+
+
+
+```{r}
+# add year
+d_mmi <- d_mmi %>%
+    mutate(YEAR = DATE %>% format(format = "%Y") %>% as.integer)
+
+# number of records
+n_records <- nrow(d_mmi)
+n_samples <- d_mmi$ID %>% 
+    unique %>% 
+    length
+```
+
+- Number of records remaining for analysis: `r n_records` 
+- Number of samples remaining for analysis: `r n_samples`
+
+
+## Taxonomic groups
+
+The figures below give for each combination of OBJECTID-HABITAT-YEAR the average abundance in each taxonomic group. The first figure gives _absolute_ abundances (counts), the second figure _relative_ abundances (percentages). See also `r sQuote(basename(settings$files$out_group))` in the OUTPUT-directory for these entries per sample.
+
+
+```{r}
+
+# total counts in each group per sampling unit (box core etc.)
+d <- d_mmi %>%
+    left_join(d_taxa %>% select(accepted, group) %>% distinct, by = c(TAXON = "accepted")) %>%
+    group_by(OBJECTID, SAMPLEID, HABITAT, DATE, YEAR, group) %>%
+    summarise(n = sum(VALUE)) 
+
+# ...store resulting table in wide format
+d %>% left_join( 
+        d %>%
+        group_by(OBJECTID, SAMPLEID, HABITAT, DATE, YEAR) %>%
+        summarise(N = sum(n)),
+        by = c("OBJECTID", "SAMPLEID", "HABITAT", "DATE", "YEAR")) %>%
+    mutate(p = as.integer(round(100 * n / N))) %>%
+    select(-n) %>%
+    spread(key = group, value = p, fill = 0L) %>%
+    write_csv(settings$files$out_group)
+
+# mean counts per group per sample, also expressed as percentages
+dominant_groups <- c("APPOL", "CRAMP", "ECHIN", "MOBIV")
+d <- d %>%
+    ungroup %>%
+    select(-DATE, -SAMPLEID) %>%
+    mutate(group = ifelse(group %in% dominant_groups, group, "OTHER")) %>%
+    group_by(OBJECTID, HABITAT, YEAR, group) %>%
+    summarise_all(funs(mean)) %>%
+    group_by(OBJECTID, HABITAT, YEAR) %>%
+    mutate(p = 100 * n / sum(n)) %>%
+    mutate(ohy = paste(OBJECTID, HABITAT, YEAR, sep = "-")) 
+
+```
+
+
+```{r}
+# figure height
+fig_height <- d %>% 
+    select(OBJECTID, HABITAT, YEAR) %>% 
+    distinct %>% 
+    nrow %/% 
+    3L %>% 
+    max(3) %>% 
+    min(7)
+```
+
+
+<figure>
+```{r, fig.width=7, fig.height=fig_height, out.width=900, dpi=150, warning=FALSE}
+ggplot(data = d) +
+    geom_col(mapping = aes(x = ohy, y = n, fill = group)) +
+    scale_x_discrete(name = "", limits = rev(unique(d$ohy))) +
+    scale_y_continuous(name = "mean abundance per sample (counts)") +
+    coord_flip()
+
+ggplot(data = d) +
+    geom_col(mapping = aes(x = ohy, y = p, fill = group)) +
+    scale_x_discrete(name = "", limits = rev(unique(d$ohy))) +
+    scale_y_continuous(name = "mean abundance per sample (%)") +
+    coord_flip()
+```
+<figcaption> Mean abundance per taxonomic group. Top: expressed as counts per sample, bottom: expressed as percentages per sample. APPOL = Polychaetes; CRAMP = Amphipods; ECHIN = Echninodermata; MOBIV = Bivalvia; OTHER = other groups.</figcaption>
+</figure>
+</figure>
+<br>
+<br>
+
+
+## Conversion of species names
+
+```{r}
+to_log("INFO", "Entering section 'Conversion of species names'...")
+```
+
+The table below list all taxon names in benthos-file '`r basename(settings$files$benthos)`' that are converted to accepted taxon names in WoRMS: 
+```{r results='asis'}
+d_mmi %>%
+    select(TAXON_OLD, TAXON) %>%
+    distinct %>%
+    filter(tolower(TAXON_OLD) != tolower(TAXON)) %>%
+    rename(`BENTHOS-file` = TAXON_OLD, WoRMS = TAXON) %>%
+    xtable %>%
+    print(type = "html", include.rownames = FALSE)
+```
+
+<br>
+
+
+```{r}
+inconvertible <- d_mmi %>%
+    filter(is.na(TAXON)) %>%
+    group_by(TAXON_OLD) %>%
+    summarise(COUNT = n()) %>%
+    mutate("similar name(s) WoRMS" = TAXON_OLD %>% sapply(
+        FUN = function(x) {
+                x <- agrep(pattern = x, x = d_taxa$accepted, value = TRUE, 
+                           ignore.case = TRUE)
+                if ((length(x) == 0L) | (length(x) > 5L)) {
+                    x <- ""
+                }
+                x %>% toString
+            }
+        )
+    ) %>%
+    rename(TAXON = TAXON_OLD)
+
+d_mmi <- d_mmi %>% 
+    filter(!is.na(TAXON)) %>%
+    select(-TAXON_OLD)
+
+```
+
+The following `r nrow(inconvertible)` taxon names in the benthos-file are inconvertible. These names are not WoRMS-compliant, and will be removed:
+```{r eval=nrow(inconvertible)>0L, results='asis'}
+inconvertible %>%
+    xtable %>%
+    print(type = "html", include.rownames = FALSE)
+```
+
+The first column gives the taxon name as found in the benthos input file (`r basename(settings$files$benthos)`), the second column gives the number of occurrences of this name, and the third column gives taxon names (if any) according to WoRMS that are most similar to the one in the benthos input file. This column may be useful to discover and correct typing errors or slightly different spelling. Please report inconvertible taxa names of Dutch benthos data to the TAXA list manager of Rijkswaterstaat (myra.swarte@rws.nl).
+
+
+
+
+```{r child="species-sensitivity-values.Rmd", eval=any(c("iti", "ambi") %in% settings$indicators)}
+```
+
+
+
+
+
+## OBJECTID-HABITATs and sample areas
+
+```{r}
+to_log("INFO", "Entering section 'OBJECTID-HABITATs and sample areas'...")
+```
+
+
+The following habitats have been selected:
+```{r results='asis'}
+d_mmi %>%
+    group_by(OBJECTID, HABITAT, SAMPLEID, DATE) %>%
+    summarise("N_RECORDS" = n()) %>%
+    group_by(OBJECTID, HABITAT) %>%
+    summarise(
+        "N_SAMPLES" = n(),
+        "N_RECORDS" = sum(N_RECORDS)
+    ) %>%
+    xtable %>%
+    print(type = "html", include.rownames = FALSE)
+```
+
+
+The table below gives the total sample area for the available sample sizes (m&sup2;). The corresponding number of samples is given in brackets.
+
+```{r results='asis'}
+d1 <- d_mmi %>%
+    select(OBJECTID, HABITAT, YEAR, SAMPLEID, AREA) %>%
+    distinct %>%
+    select(-SAMPLEID) %>%
+    group_by(OBJECTID, HABITAT, YEAR, AREA) %>%
+    summarise(total_area = sum(AREA)) %>%
+    spread(key = AREA, value = total_area, fill = 0)
+d1$TOTAL <- rowSums(d1[, -(1:3)])
+
+d2 <- d_mmi %>%
+    select(OBJECTID, HABITAT, YEAR, SAMPLEID, AREA) %>%
+    distinct %>%
+    select(-SAMPLEID) %>%
+    group_by(OBJECTID, HABITAT, YEAR, AREA) %>%
+    summarise(n_samples = n()) %>%
+    spread(key = AREA, value = n_samples, fill = 0L)
+d2$TOTAL <- rowSums(d2[, -(1:3)]) %>% as.integer
+
+d <- d1
+for (j in 4:ncol(d)) {
+    d1[[j]] <- formatC(x = d1[[j]], format = "f", digits = 3)
+    d2[[j]] <- as.character(d2[[j]])
+    d1[[j]] <- format(x = d1[[j]])
+    d2[[j]] <- format(x = d2[[j]])
+    d[[j]] <- apply(
+        X = cbind(d1[[j]], d2[[j]]),
+        MARGIN = 1L, 
+        FUN = function(x) {
+            paste(x[1], paste0("(", x[2], ")"), collapse = "")
+        }
+    )
+}
+
+d %>%
+    xtable %>%
+    print(type = "html", include.rownames = FALSE)
+```
+
+
+```{r child="pooling-area.Rmd", eval=isTRUE(settings$pooling$enabled)}
+```
+
+```{r child="genus-to-species.Rmd", eval=isTRUE(settings$genustospeciesconversion)}
+```
+
+
+
+## Data pooling
+
+```{r}
+to_log("INFO", "Entering section 'Data pooling'...")
+```
+
+
+```{r child="pooling.Rmd", eval=isTRUE(settings$pooling$enabled)}
+```
+
+```{r child="no-pooling.Rmd", eval=!isTRUE(settings$pooling$enabled)}
+```
+
+```{r child="mds.Rmd", eval=!isTRUE(settings$pooling$enabled)}
+```
+
+```{r}
+# store pre-processed data
+to_log("INFO", "Finished data preprocessing")
+to_log("INFO", sprintf("Storing preprocessed (tidy) data in %s...", sQuote(basename(settings$files$out_tidy))))
+required_vars <- c("OBJECTID", "HABITAT", "SAMPLEID", 
+                   "LAT", "LONG", "DATE",
+                   "SAMPDEV", "MESH", "TAXON", "VALUE")
+if (has_pressure) {
+    required_vars <- c(required_vars, "PRESSURE")
+}
+if (settings$pooling$enabled) {
+    d_mmi %>%
+        select_(.dots = c(required_vars, "POOL_RUN", "POOL_ID")) %>%         
+        write_csv(path = settings$files$out_tidy, na = "")
+} else {
+    d_mmi %>%
+        select_(.dots = required_vars) %>%         
+        write_csv(path = settings$files$out_tidy, na = "")
+}
+to_log("INFO", "preprocessed data has been stored.")
+```
+
+
+
+
+## Index calculation
+
+```{r}
+to_log("INFO", "Entering section 'Index calculation'...")
+```
+
+
+### Total abundance
+
+The total abundance of individuals (_N_) in the data pool. This index is provided for general information on the sample, quality control and optional manual correction for sample size (_e.g._ by means of Margalef _d_).
+
+```{r child="indicator-lnn.Rmd", eval=("lnn" %in% settings$indicators)}
+```
+
+```{r child="indicator-species-richness.Rmd", eval=("s" %in% settings$indicators)}
+```
+
+```{r child="indicator-margalef-d.Rmd", eval=("d" %in% settings$indicators)}
+```
+
+```{r child="indicator-rygg-sn.Rmd", eval=("sn" %in% settings$indicators)}
+```
+
+```{r child="indicator-rygg-sna.Rmd", eval=("sna" %in% settings$indicators)}
+```
+
+```{r child="indicator-simpson-l.Rmd", eval=("l" %in% settings$indicators)}
+```
+
+```{r child="indicator-hill-n2.Rmd", eval=("n2" %in% settings$indicators)}
+```
+
+```{r child="indicator-hurlbert-pie.Rmd", eval=("pie" %in% settings$indicators)}
+```
+
+```{r child="indicator-shannon-h.Rmd", eval=("h" %in% settings$indicators)}
+```
+
+
+
+
+```{r}
+indicator_functions <- list(
+    N = ~total_abundance(count = VALUE),
+    LNN = ~lnn(count = VALUE),
+    S = ~species_richness(taxon = TAXON, count = VALUE),
+    D = ~margalef(taxon = TAXON, count = VALUE),
+    SN = ~rygg(taxon = TAXON, count = VALUE),
+    SNA = ~rygg(taxon = TAXON, count = VALUE, adjusted = TRUE),
+    L = ~simpson(taxon = TAXON, count = VALUE),
+    H = ~shannon(taxon = TAXON, count = VALUE),
+    N2 = ~hill2(taxon = TAXON, count = VALUE),
+    PIE = ~hpie(taxon = TAXON, count = VALUE),
+    AMBI = ~ambi(taxon = TAXON, count = VALUE, group = AMBI_GROUP),
+    ITI  = ~iti( taxon = TAXON, count = VALUE, group = ITI_GROUP)    
+)
+if (!("AMBI_GROUP" %in% names(d_mmi))) {
+    indicator_functions$AMBI <- ~ambi(taxon = TAXON, count = VALUE)
+}
+if (!("ITI_GROUP" %in% names(d_mmi))) {
+    indicator_functions$ITI <- ~iti(taxon = TAXON, count = VALUE)
+}
+
+indicator_functions <- indicator_functions[unique(c("N", toupper(settings$indicators)))]
+
+if (!has_pressure) { # add dummy (to prevent extra code)
+    d_mmi$PRESSURE <- NA_real_
+}
+d_ind <- full_join( 
+    d_mmi %>%
+        group_by(OBJECTID, HABITAT, YEAR, POOL_RUN, POOL_ID) %>%
+        summarise_(.dots = indicator_functions),
+    d_mmi %>%
+        group_by(OBJECTID, HABITAT, YEAR, POOL_RUN, POOL_ID) %>%
+        distinct(ID, AREA, PRESSURE) %>%
+        summarise(
+            N_SAMPLES_POOL = n(),
+            POOL_AREA = sum(AREA),
+            PRESSURE = (AREA * PRESSURE) / sum(AREA)
+        ),
+    by = c("OBJECTID", "HABITAT", "YEAR", "POOL_RUN", "POOL_ID")
+) %>%
+    ungroup 
+
+if (!has_pressure) { # remove dummy
+    d_ind$PRESSURE <- NULL
+    d_mmi$PRESSURE <- NULL
+}
+
+# add sample id if pooling is disabled
+if (settings$pooling$enabled == FALSE) {
+    d_ind <- d_ind %>% 
+        left_join(
+            d_mmi %>% 
+                select(OBJECTID, HABITAT, YEAR, POOL_RUN, POOL_ID, SAMPLEID) %>%
+                distinct,
+            by = c("OBJECTID", "HABITAT", "YEAR", "POOL_RUN", "POOL_ID")
+        )
+}
+
+```
+
+
+
+
+
+```{r child="ambi-missing.Rmd", eval=("ambi" %in% settings$indicators)}
+```
+
+```{r child="iti-missing.Rmd", eval=("iti" %in% settings$indicators)}
+```
+
+
+
+## Index percentile values
+
+```{r}
+to_log("INFO", "Entering section 'Index percentile values'...")
+```
+
+
+
+Percentiles for each index are given below. In addition, the number of samples (n) used to calculate these percentiles is provided. The percentiles have been calculated for the period `r paste(range(d_ind$YEAR), collapse = "-")` and months `r paste(range(settings$months), collapse = "-")`.
+```{r results='asis'}
+# utility function for unrolling a list data_frame
+# (note as.data.frame recyles lists if necessary)
+unroll <- 
+function(x) {
+    lapply(
+        X = seq_len(nrow(x)),
+        FUN = function(i) {
+            x[i, ] %>% 
+                lapply(unlist) %>% 
+                as.data.frame(stringsAsFactors = FALSE) %>%
+                as_data_frame
+        }
+    ) %>%
+        bind_rows
+}
+
+
+# estimate percentiles
+probs <- c(0, 1, 5, 25, 50, 75, 95, 99, 100) / 100
+d <- d_ind %>%
+    select(-YEAR, -POOL_RUN, -POOL_ID)
+if (settings$pooling$enabled == FALSE) {
+    d$SAMPLEID <- NULL
+}
+    
+d <- d %>%
+    group_by(OBJECTID, HABITAT) %>%
+    summarise_all(funs(list(quantile(., probs = probs, na.rm = TRUE)))) %>%
+    unroll %>%
+    left_join(
+        d_ind %>%
+            group_by(OBJECTID, HABITAT) %>%
+            summarise(n = n()),
+        by = c("OBJECTID", "HABITAT")
+    )
+
+d$PERC <- probs * 100
+d %>%
+    select_(.dots = c("OBJECTID", "HABITAT", "PERC", toupper(settings$indicators), "n")) %>%
+    xtable %>% 
+    print(type = "html")
+```
+
+```{r}
+# figure height
+fig_height <- (((d_ind %>% select(OBJECTID, HABITAT) %>% distinct %>% nrow)-1L) %/% 3L + 1L) * 3
+```
+
+<figure>
+```{r, fig.width=7, fig.height=fig_height, out.width=900, dpi=150, warning=FALSE}
+d <- d_ind 
+d$SAMPLEID <- NULL
+d <- d %>%
+    select_(.dots = c("OBJECTID", "HABITAT", toupper(settings$indicators))) %>%
+    gather(key = "indicator", value = "value", -OBJECTID, -HABITAT) %>%
+    mutate(indicator = as.character(indicator))
+
+
+lut <- c(N = 99L, LNN = 99L, S = 99L, D = 99L, SN = 99L, SNA = 99L, H = 99L, L = 1L, N2 = 99L, PIE = 99L, AMBI = 1L, ITI = 99L)
+
+d_p <- d %>% 
+    group_by(OBJECTID, HABITAT, indicator) %>%
+    summarise(
+        p01 = quantile(x = value, probs = 0.01, na.rm = TRUE),
+        p99 = quantile(x = value, probs = 0.99, na.rm = TRUE)
+    )
+d_p$p <- ifelse(lut[d_p$indicator] == 99L, d_p$p99, d_p$p01)
+
+ggplot(data = d, mapping = aes(x = value)) +
+    geom_vline(data = d_p, mapping = aes(xintercept = p), colour = "red") +
+    stat_ecdf(na.rm = TRUE) +
+    geom_rug() +
+    scale_x_continuous(name = "index value") +
+    scale_y_continuous(name = "cumulative probability") +
+    facet_grid(HABITAT * OBJECTID ~ indicator, scales = "free_x")
+
+```
+<figcaption>Cumulative distributions for each index, OBJECTID and HABITAT. The red line is the reference value based on the 1%- or 99%-percentile. The vertical dashes on the x-axis denote the data positions (rug-plot).</figcaption>
+</figure>
+<br>
+<br>
+
+
+```{r}
+section_title <- if(tolower(settings$legendtext) == "eqr") {
+        "Index Ecological Quality Ratios"
+    } else {
+        "Normalized Indices"
+    }
+```
+
+## `r section_title`
+
+```{r}
+to_log("INFO", sprintf("Entering section '%s'...", section_title))
+```
+
+
+The following `r tolower(section_title)` are calculated:
+
+
+
+```{r child="eqr-species-richness.Rmd", eval=("s" %in% settings$indicators)}
+```
+
+```{r child="eqr-margalef-d.Rmd", eval=("d" %in% settings$indicators)}
+```
+
+```{r child="eqr-rygg-sn.Rmd", eval=("sn" %in% settings$indicators)}
+```
+
+```{r child="eqr-rygg-sna.Rmd", eval=("sna" %in% settings$indicators)}
+```
+
+```{r child="eqr-simpson-l.Rmd", eval=("l" %in% settings$indicators)}
+```
+
+```{r child="eqr-hill-n2.Rmd", eval=("n2" %in% settings$indicators)}
+```
+
+```{r child="eqr-hurlbert-pie.Rmd", eval=("pie" %in% settings$indicators)}
+```
+
+```{r child="eqr-shannon-h.Rmd", eval=("h" %in% settings$indicators)}
+```
+
+```{r child="eqr-ambi.Rmd", eval=("ambi" %in% settings$indicators)}
+```
+
+```{r child="eqr-iti.Rmd", eval=("iti" %in% settings$indicators)}
+```
+
+
+
+
+
+
+
+<br>
+
+The 'bad' and 'ref' values can be found in the table below. This table is a copy of `r settings$files$habitats %>% basename %>% sQuote` as specified in the settings file.
+```{r results='asis'}
+d_ref %>%
+    xtable %>%
+    print(type = "html", include.rownames = FALSE)
+```
+
+
+
+
+```{r}
+# compute EQRs
+eqr_functions <- list(
+    N = ~eqr(x = N, bad = NBAD, ref = NREF),
+    LNN = ~eqr(x = LNN, bad = LNNBAD, ref = LNNREF),
+    S = ~eqr(x = S, bad = SBAD, ref = SREF),
+    D = ~eqr(x = D, bad = DBAD, ref = DREF),
+    SN = ~eqr(x = SN, bad = SNBAD, ref = SNREF),
+    SNA = ~eqr(x = SNA, bad = SNABAD, ref = SNAREF),
+    L = ~eqr(x = L, bad = LBAD, ref = LREF),
+    N2 = ~eqr(x = N2, bad = N2BAD, ref = N2REF),
+    PIE = ~eqr(x = PIE, bad = PIEBAD, ref = PIEREF),
+    H = ~eqr(x = H, bad = HBAD, ref = HREF),
+    AMBI = ~eqr(x = AMBI, bad = AMBIBAD, ref = AMBIREF),
+    ITI = ~eqr(x = ITI, bad = ITIBAD, ref = ITIREF)
+)
+names(eqr_functions) <- paste0(names(eqr_functions), "_STAR")
+eqr_functions <- eqr_functions[indicators_EQR]
+d_ind <- d_ind %>% 
+    left_join(d_ref, by = c("OBJECTID", "HABITAT")) %>%
+    mutate_(.dots = eqr_functions)
+```
+
+
+```{r eval=!isTRUE(settings$pooling$enabled)}
+# create SAMPLE file and add DATE column
+d <- d_ind %>%
+    select_(.dots = c("OBJECTID", "HABITAT", "SAMPLEID", "YEAR", "N",
+                      indicators, indicators_EQR)) %>%
+    set_names(sub(pattern = "_STAR$", replacement = "*", x = names(.))) %>%
+    left_join(
+        d_mmi %>% 
+        select(OBJECTID, HABITAT, SAMPLEID, YEAR, DATE) %>%
+        distinct,
+        by = c("OBJECTID", "HABITAT", "SAMPLEID", "YEAR")
+    )
+
+# reorder columns
+first_columns <- c("OBJECTID", "HABITAT", "SAMPLEID", "DATE", "YEAR")
+d[, c(first_columns, setdiff(names(d), first_columns))] %>%
+    write_csv(path = settings$files$out_sample, na = "")
+
+d_ind <- d_ind %>% 
+    select(-SAMPLEID)
+```
+
+
+
+
+
+## Results
+
+```{r}
+to_log("INFO", "Entering section 'Results'...")
+```
+
+
+
+```{r child="study-area.Rmd", eval=!has_pressure}
+```
+
+```{r child="study-area-pressure.Rmd", eval=has_pressure}
+```
+
+```{r child="plot-scatter.Rmd", eval=(number_of_indicators > 1L)}
+```
+
+```{r child="weights-user.Rmd", eval=!needs_optimization}
+```
+
+```{r child="model-linear.Rmd", eval=settings$model == "linear"}
+```
+
+```{r child="model-exponential.Rmd", eval=settings$model == "exponential"}
+```
+
+
+```{r child="plot-box-whisker.Rmd", eval=has_pressure}
+```
+
+
+
+
+
+<br>
+<br>
+
+### Aggregation
+
+```{r}
+to_log("INFO", "Entering subsection 'Aggregation...'...")
+```
+
+
+The results are averaged to OBJECTID-HABITAT-YEAR combinations. The table below lists all results aggregated by OBJECTID, HABITAT and YEAR. In addition the `r settings$confidencelevel`-confidence interval for the mean is given. NB, for the calculation of the confidence intervals, a normal distribution of the mean is assumed. For small sample sizes, this assumption may not be valid.
+
+
+```{r}
+d_agg <- d_ind %>% 
+    select(OBJECTID, HABITAT, YEAR, RELAREA, ends_with("_STAR")) %>%
+    group_by(OBJECTID, HABITAT, YEAR, RELAREA) %>%
+    summarise_all(
+        funs(
+            LOWER_LIMIT = ci_mean(., level = settings$confidencelevel)["lower"],
+            MEAN        = ci_mean(., level = settings$confidencelevel)["mean"],
+            UPPER_LIMIT = ci_mean(., level = settings$confidencelevel)["upper"]
+        )
+    )
+```
+
+```{r eval=nrow(d_agg)>0L, results='asis'}
+
+# place column names in the desired order
+names(d_agg) <- sub(pattern = "^MMI_STAR_(.+)$", 
+                    replacement = "ZZZZZ\\1", x = names(d_agg))
+d <- names(d_agg)
+d <- c(d[1:4], sort(d[-(1:4)]))
+d_agg <- d_agg[, d]
+names(d_agg) <- sub(pattern = "^Z{5}(.+)$", 
+                    replacement = "MMI_STAR_\\1", x = names(d_agg))
+
+
+# print table with double lines header
+d <- d_agg
+names(d) <- sub(pattern = "_LOWER_LIMIT", replacement = "\\\nlower limit", x = names(d))
+names(d) <- sub(pattern = "_MEAN",        replacement = "\\\nmean", x = names(d))
+names(d) <- sub(pattern = "_UPPER_LIMIT", replacement = "\\\nupper limit", x = names(d))
+names(d) <- sub(pattern = "_STAR", replacement = "*", x = names(d))
+d %>% 
+    select(-RELAREA) %>%
+    xtable %>%
+    print(type = "html", include.rownames = FALSE)
+
+# store results in a CSV-file (single line header)
+d_agg %>%
+    select(-RELAREA) %>%
+    set_names(sub(pattern = "_STAR", replacement = "*", x = names(.))) %>%
+    set_names(sub(pattern = "_UPPER_LIMIT", replacement = " upper limit", x = names(.))) %>%
+    set_names(sub(pattern = "_LOWER_LIMIT", replacement = " lower limit", x = names(.))) %>%
+    set_names(sub(pattern = "_MEAN", replacement = " mean", x = names(.))) %>%
+    write_csv(path = settings$files$out_habitat, na = "")
+
+```
+
+<br>
+
+
+
+`r if (sprintf("MMI_%s_MEAN", settings$legendtext) %in% names(d_agg)) { "The table below lists the results aggregated (habitat area-weighted) by OBJECTID and YEAR."}`
+
+
+```{r results='asis', eval=(sprintf("MMI_%s_MEAN", settings$legendtext) %in% names(d_agg))}
+# Two-step aggregation:
+# 1. per OBJECTID-HABITAT-YEAR
+# 2. per OBJECTID-YEAR
+# (otherwise the averages will be depend on the number of samples)
+d_agg <- d_agg %>%
+    group_by(OBJECTID, YEAR) %>%
+    summarise(MMI_STAR = sum(MMI_STAR_MEAN * RELAREA, na.rm = TRUE) / sum(RELAREA, na.rm = TRUE)) %>%
+    rename("MMI_STAR" = "MMI*")
+
+# print table
+d_agg %>% 
+    xtable %>% 
+    print(type = "html")
+
+# store results in a file
+d_agg %>% 
+    write_csv(path = settings$files$out_objectid, na = "")
+```
+
+
+
+## References
+
+```{r}
+to_log("INFO", "Entering section 'References'...")
+```
+
+
+Borja, A., J. Franco and V. P&eacute;rez, 2000. A Marine Biotic Index to Establish the Ecological Quality of Soft-Bottom Benthos Within European Estuarine and Coastal Environments. Marine Pollution Bulletin 40:1100-1114
+
+Gittenberger A. and  W. van Loon, 2013. Sensitivities of marine macrozoobenthos to environmental pressures in the Netherlands. Nederlandse Faunistische Mededelingen, 41 (2013) 79-112.
+
+Nickel, S., A. Hertel, R. Pesch, W. Schroeder, E. Steinnes, H. Thelle Uggerud, 2014. Correlating concentrations of heavy metals in atmospheric deposition with respective accumulation in moss and natural surface soil for ecological land classes in Norway between 1990 and 2010. Environ Sci Pollut Res.
+
+Sammon, J. W., 1969. A non-linear mapping for data structure analysis. IEEE Trans. Comput., C-18 401–409.
+
+Shannon, C. E., 1948. A Mathematical Theory of Communication. Bell System Technical Journal 27: 379–423.
+
+van Loon, W.M.G.M., A.R. Boon, A. Gittenberger, D.J.J. Walvoort, M. Lavaleye, G.C.A. Duineveld, A.J. Verschoor, 2015. Application of the Benthic Ecosystem Quality Index 2 to benthos in Dutch transitional and coastal waters. Journal of Sea Research 103:1-13
+
+Willem van Loon, Dennis Walvoort, Marc Lavaleye, Gerard Duineveld, Christina Herbon, Abigayil Blandon, Graham Philips, Roland Pesch, Petra Schmidt, Jorg Scholle, Karin Heyer, Gert van Hoey, Mats Blomqvist, 2017. A regional benthos assessment method for the Southern North Sea using Margalef diversity and reference value modeling. Accepted for publication by Ecological Indicators
+
+
+
+## Acknowledgements
+
+```{r}
+to_log("INFO", "Entering section 'Acknowledgements'...")
+```
+
+
+Angel Borja (AZTI-TECHNALIA, Spain), is kindly acknowledged for the permission to use the standard AMBI species list (ambi.azti.es).
+
+
+
+
+
+## Session information 
+
+```{r}
+to_log("INFO", "Entering section 'Session information'...")
+```
+
+
+
+```{r}
+sessionInfo()
+```
+
+
+
+
+<div style="margin-bottom: 50mm;"></div>
+
+# Appendices
+
+```{r child="plot-qc-margalef.Rmd", eval=isTRUE("D" %in% indicators)}
+```
+
+
+
+## Sample size versus confidence interval
+
+For interpretation of the current results and future sampling, the relation between the confidence interval and the sample size is of interest.
+
+The minimum sample size _n_ required to estimate the mean `r title_text` within _d_ `r title_text`-units from the true mean with 1-&alpha; confidence (in this report 1-&alpha; = `r settings$confidencelevel`) can be estimated by
+
+_n_ = (_&sigma;_ _t_<sub>&alpha;/2,&nu;</sub>)<sup>2</sup> / _d_<sup>2</sup>
+
+where _&sigma;_ is the standard deviation, _t_<sub>&alpha;/2,&nu;</sub> is the Student's _t_-value for significance level &alpha; and &nu;=_n_-1 degrees of freedom. See also Nickel _et al._ (2014), or 
+[Wikipedia](https://en.wikipedia.org/wiki/Sample_size_determination#Means).
+
+Note: in this report, we do not use transformations like the logit. Since we usually have sufficiently large sample sizes, the distribution of the mean `r title_text` will tend to normality (central limit theorem).
+
+
+```{r}
+MIN_SAMPLE_SIZE <- 10L
+d <- d_ind
+# only the MMI is needed if the user has provided the weights
+# (see 2016-12-08-BENMMI-TESTVERSLAG-V4.1.docx)
+if (!is.null(settings$weights)) {
+    d <- d  %>% 
+        select(OBJECTID, HABITAT, MMI_STAR)
+} else {
+    d <- d  %>% 
+        select_(.dots = c("OBJECTID", "HABITAT", indicators_EQR, "MMI_STAR"))
+}
+
+
+d <- d %>%
+    gather(key = EQR, value = VALUE, ends_with("_STAR")) %>%
+    group_by(OBJECTID, HABITAT, EQR) %>%
+    summarise(
+        sigma = sd(VALUE, na.rm = TRUE),
+        n = sum(!is.na(VALUE))
+    ) %>%
+    ungroup %>%
+    mutate(
+        t_alpha = ifelse(
+            n < MIN_SAMPLE_SIZE, 
+            NA_real_, 
+            qt(p = 0.5 * (1 + settings$confidencelevel), df = n - 1)
+        )
+    ) %>%
+    rowwise() %>%
+    do(
+        OBJECTID = rep.int(x = .$OBJECTID, times = 23),
+        HABITAT = rep.int(x = .$HABITAT, times = 23),
+        EQR = rep.int(x = .$EQR, times = 23),
+        t_alpha = rep.int(x = .$t_alpha, times = 23),
+        sigma = rep.int(x = .$sigma, times = 23),
+        d = seq(from = 0.01, to = 0.12, by = 0.005)
+    ) %>%
+    unnest() %>%
+    mutate(
+        n = ceiling((t_alpha * sigma / d)^2)
+    )
+```
+
+
+In the figure below, sample size (_n_) is given as function of the half width (_d_) of the `r 100*settings$confidencelevel`%-confidence interval of the mean `r title_text` for every `r title_text` and OBJECTID-HABITAT combination. These graphs can be used to estimate the required sample size (y-axis) for a given confidence interval (x-axis).
+
+Suppose one needs to estimate the mean of ``r d$EQR[9]`` for OBJECTID ``r d$OBJECTID[9]`` and HABITAT ``r d$HABITAT[9]`` and
+one wants this estimated mean within _d_=`r round(d$d[9], 2)` `r title_text`-units of the true (but unknown) mean with `r 100*settings$confidencelevel`% confidence, then one needs a minimum sample size of `r d$n[9]`.
+
+
+
+
+```{r}
+# figure height
+fig_height <- (((d %>% select(OBJECTID, HABITAT) %>% distinct %>% nrow)-1L) %/% 2L + 1L) * 2
+```
+
+<figure>
+```{r,echo=FALSE, fig.retina=NULL, fig.width=6, fig.height=fig_height, out.width=900, dpi=300, warning=FALSE, message=FALSE}
+d$EQR <- sub(pattern = "_STAR$", replacement = "*", x = d$EQR)
+g <- ggplot(
+    data = d %>% 
+        filter(n <= 100) %>% 
+        mutate(label = paste(OBJECTID, HABITAT, sep = " - "))
+    ) +
+        geom_path(mapping = aes(x = d, y = n, colour = EQR, linetype = EQR)) +
+        scale_color_discrete(name = "index") +
+        scale_linetype(name = "index") +
+        facet_wrap(~ label, ncol = 2) +
+        scale_y_continuous(name = "sample size (n)", limits = c(0, NA)) +
+        scale_x_continuous(name = sprintf("Half width (d) of %s%%- conf.int. %s", 100*settings$confidencelevel, title_text), limits  = c(0, NA))
+suppressWarnings(print(g))
+```
+<figcaption>Half width of the `r 100*settings$confidencelevel`%-confidence interval of the mean `r title_text` as function of sample size.</figcaption>
+</figure>
+<br>
+<br>
+
+The calculation of these curves is driven by the benthos data in the input file "`r basename(settings$files$benthos)`". For example, these curves can be calculated for a specific OBJECTID-HABITAT, using data for a period of two or three years (to also account for temporal variability). Also note that if the dataset in the input file is used for an assessment, then it can be checked if the sample size was sufficient for the desired confidence interval of the assessment.
+
+The table below presents a subset of the data in the figure above in tabular format. Column 'd' gives half of the width of the `r 100*settings$confidencelevel`%-confidence interval in `r title_text`-units. Column 'n' is the corresponding minimum sample size.
+
+```{r, results='asis'}
+d %>%
+    filter(as.character(d) %in% as.character(seq(from = 0.02, to = 0.12, by = 0.02))) %>%
+    select(OBJECTID, HABITAT, INDEX = EQR, d, n) %>%
+    xtable(digits = c(0, 0, 0, 0, 2, 0)) %>%
+    print(type = "html", include.rownames = FALSE)
+```
+Note: in case the sample size in "`r basename(settings$files$benthos)`" is smaller than `r MIN_SAMPLE_SIZE` for a specific OBJECTID-HABITAT, then the minimum sample size is not calculated. 

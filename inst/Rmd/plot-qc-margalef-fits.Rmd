@@ -1,0 +1,112 @@
+The table and figures below give linear fits of _S_-1 versus log(_N_). The table lists the number of samples, the intercept (b0), the slope (b1), and r^2^, for each fit for combinations of OBJECTID, HABITAT, and YEAR with at least `r min_samples` samples. In addition, the p-value of the fit is given. The figures also give the 99%-confidence and 99%-prediction intervals. See figure caption for more information.
+
+
+```{r results='asis'}
+# add points with confidence and prediction intervals
+d$g <- d %>%
+    select(-n) %>%
+    pmap(function(OBJECTID, HABITAT, YEAR, x_logN, model, g) {
+        g +
+            geom_ribbon(
+                data = data.frame(
+                    logN = x_logN,
+                    predict(model, newdata = data.frame(logN = x_logN), 
+                           interval = "prediction", level = 0.99)
+                ),
+                mapping = aes(x = logN, ymin = lwr, ymax = upr),
+                fill = "blue", alpha = 0.1) +
+            geom_ribbon(
+                data = data.frame(
+                    logN = x_logN,
+                    predict(model, newdata = data.frame(logN = x_logN), 
+                           interval = "confidence", level = 0.99)
+                ),
+                mapping = aes(x = logN, ymin = lwr, ymax = upr),
+                fill = "blue", alpha = 0.1) +
+            geom_point(mapping = aes(x = logN, y = S-1)) +
+            geom_path(
+                data = data.frame(
+                    logN = x_logN,
+                    y = predict(model, newdata = data.frame(logN = x_logN))
+                ),
+                mapping = aes(x = logN, y = y), 
+                colour = "blue"
+            ) +
+            scale_x_continuous(name = expression(ln(N)), limits = c(-0.026, NA)) +
+            scale_y_continuous(name = "S-1") +
+            ggtitle(sprintf("%s - %s - %s", OBJECTID, HABITAT, YEAR))
+    }
+)
+
+# add r2
+d$r2 <- d$model %>% 
+    map_chr({. %>%
+            summary %>%
+            getElement("r.squared") %>%
+            formatC(format = "f", digits = 2)
+    })
+
+# add fstats
+d$f <- d$model %>%
+    map({. %>% 
+        summary %>%
+        getElement("fstatistic")
+    })
+
+# add p-value
+d$p <- d$f %>%
+    map_chr(function(x) {
+        if (is.null(x)) {
+            return(NA_character_)
+        } 
+        pf( # see stats:::print.summary.lm
+            q   = x[1L],
+            df1 = x[2L],
+            df2 = x[3L],
+            lower.tail = FALSE
+        ) %>%
+        formatC(format = "f", digits = 5)
+    })
+
+d$g <- pmap(
+    list(x = d$g, y = d$r2, z = d$p), 
+    function(x, y, z) {
+        x + 
+            annotate("text", x = -Inf, y = Inf, 
+                     label = paste0("r^2==", y), parse = TRUE, hjust = -0.1, vjust = 1.1) +
+            annotate("text",  x = -Inf, y = Inf, 
+                     label = paste0("p = ", z), hjust = -0.1, vjust = 3.1)
+        }
+    )
+
+d$model %>%
+    map_df(function(x) {
+        x %>%
+            coefficients %>%
+            t %>%
+            as_data_frame    
+    }) %>%
+    set_names(c("b0", "b1")) %>%
+    prepend(d) %>%
+    as_data_frame %>%
+    select(OBJECTID, HABITAT, YEAR, `# samples` = n, b0, b1, r2, p) %>%
+    arrange(OBJECTID, HABITAT, YEAR) %>%
+    xtable %>% 
+    print(type = "html")
+```
+
+<br>
+<br>
+<br>
+<figure>
+```{r,echo=FALSE, fig.retina=NULL, warning=FALSE, fig.width=4, fig.height=4, out.width=350, dpi=300, eval=isTRUE(nrow(d) > 0)}
+
+d$g %>%
+    walk(print)
+
+```
+<figcaption>Fits (blue line) of S-1 as function of N. The inner band is the 99%-confidence interval (represents our uncertainty about the fit), the outer band is the 99%-prediction interval (represents our uncertainty about individual points (future responses)).</figcaption>
+</figure>
+<br>
+<br>
+

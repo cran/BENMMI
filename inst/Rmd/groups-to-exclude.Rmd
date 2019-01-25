@@ -1,0 +1,32 @@
+
+```{r}
+# MMI has been designed for endofauna, therefore remove 
+# epifaunal species and insecta
+
+d_mmi <- d_mmi %>% 
+    left_join(d_taxa %>% select(accepted, group) %>% distinct, by = c("TAXON" = "accepted")) %>%
+    left_join(d_groups, by = c("group" = "GROUP"))
+
+d <- d_mmi %>%
+    select(DESCRIPTION) %>%
+    filter(!is.na(DESCRIPTION)) %>%
+    group_by(DESCRIPTION) %>%
+    summarise(COUNT = n()) %>%
+    full_join(d_groups, by = "DESCRIPTION") %>%
+    mutate(COUNT = as.integer(ifelse(is.na(COUNT), 0, COUNT))) %>%
+    select(GROUP, DESCRIPTION, COUNT) %>%
+    arrange(GROUP)
+
+# remove black-listed species from benthos data 
+# (i.e., those not in d_groups, hence description is missing)
+d_mmi <- d_mmi %>%
+    filter(is.na(DESCRIPTION)) %>%
+    select(-DESCRIPTION, -group)
+```
+
+- Total number of non-endofauna records that has been removed: `r sum(d$COUNT, na.rm = TRUE)`. The table below lists the number of records in each non-endofauna group that has been removed.
+```{r, results='asis'}
+d %>% 
+    xtable %>%
+    print(type = "html", include.rownames = FALSE)
+```

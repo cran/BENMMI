@@ -1,0 +1,46 @@
+### Box-whisker plots of Ecological Quality Ratio's
+
+```{r}
+to_log("INFO", "Entering subsection 'Box-whisker plots...'...")
+```
+
+The figures below show box-whisker plots of the `r title_text_plur` computed above for each OBJECTID.
+
+The upper/lower hinge (_i.e._, the top and the bottom of the box respectively) corresponds to the third/first quartile. The upper/lower whisker extends from the third/first quartile hinge to the largest/smallest value no further than 1.5 times the inter-quartile range from that hinge. Extreme data values are plotted as points.
+
+```{r}
+fig_height <- ((nrow(W)-1L) %/% 3L + 1L) * 2.8
+```
+<figure>
+```{r,echo=FALSE, fig.retina=NULL, fig.width=6, fig.height=fig_height, out.width=900, dpi=600, warning=FALSE, message=FALSE, eval=has_pressure}
+
+d <- d_ind %>% 
+    select(OBJECTID, PRESSURE)
+
+for (i in 1:nrow(W)) {
+    w <- W[i, ]
+    mmi_name <- paste0(names(w)[w > 0], collapse = "+")
+    mmi_name <- gsub(pattern = "_EQR", replacement = "", x = mmi_name)
+    d[[mmi_name]] <- drop(V %*% w)
+}
+    
+d <- d %>% 
+    gather(key = "EQR", value = "VALUE", -OBJECTID, -PRESSURE)
+d$EQR <- sub(pattern = "_STAR$", replacement = "*", x = d$EQR)
+
+g <- ggplot(data = d, mapping = aes(x = OBJECTID, y = VALUE)) +
+    geom_boxplot() +
+    facet_wrap(~EQR) +
+    scale_x_discrete(name = "") +
+    scale_y_continuous(name = "") +
+    theme(
+        axis.text = element_text(colour = "black"),
+        axis.text.x = element_text(angle = 45, hjust = 1)
+    )
+
+suppressWarnings(print(g))
+```
+<figcaption>Box-whisker plots of the `r title_text_plur` for each OBJECTID</figcaption>
+</figure>
+<br>
+<br>

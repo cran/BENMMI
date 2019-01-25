@@ -1,0 +1,7 @@
+### Margalef's Diversity (D)
+
+Margalef diversity is given by:
+
+_D_ = (_S_-1) / ln(_N_)
+
+It is less dependent on the sample area than _S_.

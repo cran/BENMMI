@@ -1,0 +1,3 @@
+### Hurlbert's PIE
+
+`r settings$legendtext`(PIE) = ( PIE<sub>ass</sub> - PIE<sub>bad</sub> ) / ( PIE<sub>ref</sub> - PIE<sub>bad</sub> )

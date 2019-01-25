@@ -1,0 +1,83 @@
+
+```{r child="default-iti.Rmd", eval=is.null(d_iti)}
+```
+
+```{r child="user-iti.Rmd", eval=!is.null(d_iti)}
+```
+
+```{r, eval=!is.null(d_iti)}
+d_mmi <- d_mmi %>%
+    left_join(d_iti, by = "TAXON") %>%
+    rename(ITI_GROUP = GROUP)
+```
+
+```{r}
+if (is.null(d_iti)) {
+    d <- d_mmi %>% 
+        filter(!has_iti(taxon = TAXON)) %>%
+        select(TAXON) %>%
+        group_by(TAXON) %>%
+        summarise(N_RECORDS = n())
+} else {
+    d <- d_mmi %>% 
+        filter(!has_iti(taxon = TAXON, group = ITI_GROUP) | CARNIVORE) %>%
+        select(TAXON, CARNIVORE) %>%
+        group_by(TAXON, CARNIVORE) %>%
+        summarise(N_RECORDS = n())
+}
+```
+
+```{r results='asis', eval=(nrow(d)>0L)}
+cat(sprintf("\nThe table below gives TAXA without an ITI-class. The total number of taxa without an ITI-class is %i. Among these taxa are %i carnivores which are always excluded from ITI-calculations.\n", nrow(d), sum(d$CARNIVORE, na.rm = TRUE)))
+d %>%
+    ungroup %>%
+    mutate(
+        CARNIVORE = as.character(ifelse(is.na(CARNIVORE), FALSE, CARNIVORE)),
+        CARNIVORE = ifelse(CARNIVORE, "yes", "no")
+    ) %>%
+    arrange(CARNIVORE, TAXON) %>%
+    xtable %>%
+    print(type = "html",  include.rownames = FALSE, sanitize.text = identity)
+```
+
+```{r}
+# make sure that carnivores are excluded from ITI-calculations
+d_mmi$ITI_GROUP[which(d_mmi$CARNIVORE)] <- NA_character_
+```
+
+
+<br>
+<br>
+<br>
+The table below gives for each combination of OBJECTID-HABITAT-YEAR the average total abundance (N) and average percentage of individuals in each ITI class. File `r sQuote(basename(settings$files$out_iti))` in the OUTPUT-directory gives these entries per sample.
+
+
+```{r, results='asis'}
+d <- d_mmi %>%
+    group_by(OBJECTID, SAMPLEID, HABITAT, DATE, YEAR, CARNIVORE, ITI_GROUP) %>%
+    summarise(n = sum(VALUE)) %>%
+    ungroup %>%
+    mutate(ITI_GROUP = ifelse(CARNIVORE, "carnivore", ITI_GROUP)) %>%
+    select(-CARNIVORE)
+
+
+d <- d %>% left_join( 
+        d %>%
+        group_by(OBJECTID, SAMPLEID, HABITAT, DATE, YEAR) %>%
+        summarise(N = sum(n)),
+        by = c("OBJECTID", "SAMPLEID", "HABITAT", "DATE", "YEAR")) %>%
+    mutate(p = as.integer(round(100 * n / N))) %>%
+    select(-n) %>%
+    spread(key = ITI_GROUP, value = p, fill = 0L) %>%
+    write_csv(settings$files$out_iti)
+
+rmean <- function(x){as.integer(round(mean(x)))}
+d %>%
+    ungroup %>%
+    select(-DATE, -SAMPLEID) %>%
+    group_by(OBJECTID, HABITAT, YEAR) %>%
+    summarise_each(funs(rmean)) %>%
+    xtable %>%
+    print(type = "html", include.rownames = FALSE)
+
+```

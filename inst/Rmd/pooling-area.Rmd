@@ -1,0 +1,21 @@
+
+```{r}
+sel <- which(d$total < settings$pooling$targetarea[1])
+tooSmall <- NULL
+if (length(sel) > 0L) {
+    tooSmall <- sQuote(
+        apply(
+            X = d[sel, c("YEAR", "OBJECTID", "ECOTOPE"), drop = FALSE],
+            MARGIN = 1,
+            paste,
+            collapse = "-"
+        )
+    )
+}
+```
+
+The total sample area is smaller than the minimum target pool area (`r settings$pooling$targetarea[1]`) for `r length(tooSmall)` combinations of waterbody- habitat-year.
+
+```{r eval=(length(tooSmall)>0L)}
+tooSmall
+```

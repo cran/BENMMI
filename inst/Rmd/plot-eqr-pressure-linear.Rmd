@@ -1,0 +1,150 @@
+
+A plot of the `r title_text_plur` as function of `r settings$pressure$name` is given below, showing the sensitivity of each index. In addition, the `r settings$confidencelevel`-confidence interval of the mean `r title_text` is shown, indicating its precision.
+
+
+<figure>
+```{r,echo=FALSE, fig.retina=NULL, fig.width=5, fig.height=5, out.width=900, dpi=600, warning=FALSE, message=FALSE}
+
+d <- d_ind %>% 
+    select(OBJECTID, PRESSURE)
+
+for (i in 1:nrow(W)) {
+    w <- W[i, ]
+    mmi_name <- paste0(names(w)[w > 0], collapse = "+")
+    d[[mmi_name]] <- drop(V %*% w)
+}
+
+d <- d %>% 
+    gather(key = "EQR", value = "VALUE", -OBJECTID, -PRESSURE)
+d$EQR <- gsub(pattern = "_STAR", replacement = "*", x = d$EQR)
+
+g <- ggplot(
+    data = d, 
+    mapping = aes(x = PRESSURE, y = VALUE, colour = EQR, linetype = EQR)) +
+    stat_smooth(
+        method = "lm", 
+        formula = y ~ x, 
+        level = settings$confidencelevel, 
+        size = 1
+    ) +
+    scale_x_continuous(
+        name = sprintf("%s (%s)", settings$pressure$name, settings$pressure$unit)) +
+    scale_y_continuous(name = title_text) +
+    scale_linetype_discrete(name = "") +
+    scale_colour_discrete(name = "") +
+    theme(axis.text = element_text(colour = "black"))
+suppressWarnings(print(g))
+```
+<figcaption>Linear regression of `r title_text` as function of `r settings$pressure$name`. Data points are not shown. In addition, the `r settings$confidencelevel`-confidence interval of the `r title_text` is shown, indicating its precision. Note: plotting is restricted to the data range (no extrapolation).</figcaption>
+</figure>
+<br>
+<br>
+
+
+
+The plot below shows the same results, including the data points.
+
+
+<figure>
+```{r,echo=FALSE, fig.retina=NULL, fig.width=5, fig.height=5, out.width=700, dpi=600, warning=FALSE, message=FALSE}
+for (eqr in unique(d$EQR)) {
+    
+    g <- ggplot(
+            data = d %>% filter(EQR == eqr), 
+            mapping = aes(x = PRESSURE, y = VALUE)
+        ) +
+        geom_point(alpha = 0.25) +
+        stat_smooth(
+            method = "lm", 
+            formula = y ~ x, 
+            level = settings$confidencelevel, 
+            colour = "red"
+        ) +
+        scale_x_continuous(
+            name = sprintf("%s (%s)", 
+                           settings$pressure$name, 
+                           settings$pressure$unit)) +
+        scale_y_continuous(
+            name = eqr, 
+            limits = c(min(0, min(d$VALUE)), max(1, max(d$VALUE))),
+            breaks = 0:5/5
+        ) +
+        theme(axis.text = element_text(colour = "black"))
+    print(g)
+}
+```
+<figcaption>`r Title_text` as function of `r settings$pressure$name`, including data points.</figcaption>
+</figure>
+<br>
+<br>
+
+
+Over-plotting may obscure relations in the data. Therefore, the plot below summarizes the dots in the plot above as (minimalistic) box plots:
+
+- the blue outer (thinner) vertical line segment runs from the 5% to the 95% percentile;
+- the blue inner (thicker) vertical line segment runs from the 25% to the 75% percentile;
+- the dot is the median;
+- the red line is the linear regression model fitted to the data by ordinary least squares.
+
+
+
+<figure>
+```{r,echo=FALSE, fig.retina=NULL, fig.width=5, fig.height=5, out.width=700, dpi=600, warning=FALSE, message=FALSE}
+s <- d %>%
+    group_by(OBJECTID, PRESSURE, EQR) %>%
+    summarise(
+        min = min(VALUE, na.rm = TRUE), 
+        q05 = quantile(VALUE, probs = 0.05, na.rm = TRUE),
+        q25 = quantile(VALUE, probs = 0.25, na.rm = TRUE),
+        q50 = median(VALUE, na.rm = TRUE),
+        q75 = quantile(VALUE, probs = 0.75, na.rm = TRUE),
+        q95 = quantile(VALUE, probs = 0.95, na.rm = TRUE),
+        max = max(VALUE, na.rm = TRUE),
+        n = sum(!is.na(VALUE))
+    )
+
+for (eqr in unique(d$EQR)) {
+    g <- ggplot(
+            data = s %>% filter(EQR == eqr)
+        ) +
+        stat_smooth(
+            data = d %>% filter(EQR == eqr),
+            mapping = aes(x = PRESSURE, y = VALUE),
+            method = "lm",
+            formula = y ~ x,
+            level = settings$confidencelevel,
+            size = 0.5,
+            colour = "red"
+        ) +
+        geom_linerange(
+            mapping = aes(x = PRESSURE, ymin = q05, ymax = q95),
+            size = 0.25,
+            colour = "blue",
+            alpha = 0.5
+        ) +
+        geom_linerange(
+            mapping = aes(x = PRESSURE, ymin = q25, ymax = q75),
+            size = 0.50,
+            colour = "blue",
+            alpha = 0.5
+        ) +
+        geom_point(
+            mapping = aes(x = PRESSURE, y = q50)
+        ) +
+        scale_x_continuous(
+            name = sprintf("%s (%s)", 
+                           settings$pressure$name, 
+                           settings$pressure$unit)) +
+        scale_y_continuous(
+            name = eqr, 
+            limits = c(min(0, min(d$VALUE)), max(1, max(d$VALUE))),
+            breaks = 0:5/5
+        ) +
+        theme(axis.text = element_text(colour = "black"))
+    print(g)
+}
+```
+<figcaption>`r Title_text` as function of `r settings$pressure$name`. See text for explanation.</figcaption>
+</figure>
+<br>
+<br>

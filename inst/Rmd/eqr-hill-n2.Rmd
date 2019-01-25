@@ -1,0 +1,3 @@
+### Hill's N2 index
+
+v(_N2_) = ( _N2_<sub>ass</sub> - _N2_<sub>bad</sub> ) / ( _N2_<sub>ref</sub> - _N2_<sub>bad</sub> )

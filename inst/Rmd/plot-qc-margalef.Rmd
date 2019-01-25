@@ -1,0 +1,49 @@
+<h2 style="counter-reset: h2">Quality control plot based on Margalef D</h2>
+
+
+```{r}
+to_log("INFO", "Entering subsection 'Quality control plot based on Margalef D'...")
+```
+
+```{r}
+# set minimum number of samples to analyse
+# increased from 10 to 20 (advise Willem 2016-09-12)
+min_samples <- 20L 
+
+# estimate S and N for each pool
+d <- d_mmi %>%
+    group_by(OBJECTID, HABITAT, YEAR, POOL_RUN, POOL_ID) %>%
+    summarise(
+        S = species_richness(taxon = TAXON, count = VALUE),
+        N = total_abundance(count = VALUE)
+    ) %>%
+    mutate(logN = log(N))
+
+# model (S-1) ~ log(N)
+d <- d %>%
+    group_by(OBJECTID, HABITAT, YEAR) %>%
+    do(
+        x_logN = seq(from = min(.$logN), to = max(.$logN), length.out = 100), 
+        n = nrow(.),
+        model = lm(I(S-1) ~ logN, data = .),
+        g = ggplot(data = .)
+    ) %>%
+    ungroup
+
+# unroll n
+d$n <- d$n %>% 
+    flatten_int
+
+# only create plots for at least a minimum number of samples
+d <- d %>% 
+    filter(n >= min_samples)
+
+```
+
+
+```{r child="plot-qc-margalef-fits.Rmd", eval=isTRUE(nrow(d) > 0L)}
+```
+
+```{r child="plot-qc-margalef-no-fits.Rmd", eval=isTRUE(nrow(d) == 0L)}
+```
+

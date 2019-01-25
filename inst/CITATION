@@ -1,0 +1,65 @@
+# CITATION file (see section 1.10 in Writing R Extensions)
+
+if (!exists("meta") || is.null(meta)) {
+    meta <- packageDescription("BENMMI")
+}
+
+
+citHeader("To cite package 'BENMMI' in publications use:")
+
+year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date)
+vers <- paste("R package version", meta$Version)
+title <- meta$Title
+author <- meta$Author
+
+citEntry(
+    entry   = "Manual",
+    title   = title,
+    author  = author,
+    year    = year,
+    note    = vers,
+    url     = "https://CRAN.R-project.org/package=BENMMI",
+    textVersion = paste(author, " (", year, "). ", title, ". ", vers, ". ",
+        "https://CRAN.R-project.org/package=BENMMI", sep = "")
+)
+
+
+citEntry(
+    entry = "Article",
+    title = "A regional benthic fauna assessment method for the Southern North Sea using Margalef diversity and reference value modelling",
+    author = personList(
+        as.person("Willem van Loon"),
+        as.person("Dennis Walvoort"),
+        as.person("Gert van Hoey"),
+        as.person("Christina Herbon"),
+        as.person("Abigayil Blandon"),
+        as.person("Roland Pesch"),
+        as.person("Petra Schmidt"),
+        as.person("Jorg Scholle"),
+        as.person("Karin Heyer"),
+        as.person("Marc Lavaleye"),
+        as.person("Graham Philips"),
+        as.person("Gerard Duineveld"),
+        as.person("Mats Blomqvist")
+    ),
+    journal = "Ecological Indicators",
+    year = "2018",
+    volume  = "89",
+    pages   = "667-679",
+    note = "",
+    textVersion = paste(
+        "Willem van Loon, Dennis Walvoort, Gert van Hoey, Christina Vina-Herbon,",
+        "Abigayil Blandon, Roland Pesch, Petra Schmidt, Jorg Scholle, Karin Heyer,",
+        "Marc Lavaleye, Graham Philips, Gerard Duineveld, Mats Blomqvist, 2018. ",
+        "A regional benthic fauna assessment method for the Southern North Sea using",
+        "Margalef diversity and reference value modelling",
+        "Ecological Indicators 89:667-679.")
+    )
+
+
+citFooter(
+    "The first citation refers to the BENMMI-package, the second citation to the methodology implemented in the BENMMI-package."
+)
+
+
+

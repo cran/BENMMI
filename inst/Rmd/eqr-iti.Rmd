@@ -1,0 +1,3 @@
+### ITI
+
+`r settings$legendtext`(ITI) = ( ITI<sub>ass</sub> - ITI<sub>bad</sub> ) / ( ITI<sub>ref</sub> - ITI<sub>bad</sub> )

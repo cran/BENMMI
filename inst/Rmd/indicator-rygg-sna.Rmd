@@ -1,0 +1,7 @@
+### Adjusted Rygg SN
+
+The adjusted version of Rygg SN is given by:
+
+SN = ln(_S_) / ln(ln(_N_+1)+1)
+
+It is less dependent on the sample area than _S_ and more consistent than the original formulation of Rygg (2006) for small S (2, 3) and N (2, 3).

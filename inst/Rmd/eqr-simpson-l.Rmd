@@ -1,0 +1,3 @@
+### Simpson's index
+
+`r settings$legendtext`(_L_) = ( _L_<sub>bad</sub> - _L_<sub>ass</sub> ) / ( _L_<sub>bad</sub> - _L_<sub>ref</sub> )

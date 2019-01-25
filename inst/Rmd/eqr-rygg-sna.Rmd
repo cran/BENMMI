@@ -1,0 +1,4 @@
+### Adjusted Rygg's index
+
+`r settings$legendtext`(_SNA_) = ( _SNA_<sub>ass</sub> - _SNA_<sub>bad</sub> ) / ( _SNA_<sub>ref</sub> - _SNA_<sub>bad</sub> )
+

@@ -1,0 +1,83 @@
+## Conversion of genus to species within a single sample
+
+```{r}
+to_log("INFO", "Entering section 'Conversion of genus to species within a single sample'...")
+```
+
+
+The following taxonomic ranks have been found in the MMI input file:
+
+```{r}
+d <- d_mmi %>%
+    left_join(d_taxa %>% select(accepted, level) %>% distinct, by = c("TAXON" = "accepted"))
+
+d$level %>% 
+    factor %>% 
+    table
+```
+The number of records are given below each rank. The taxonomic ranks have been obtained from the TWN/WoRMS-list.
+
+If in a specific sample a genus and one or more species of the same genus are present, it is likely that this genus is one of the species already present in the sample. Therefore, the abundance of this genus is distributed over the corresponding species already present in the sample in ratio of the abundances of species already identified in the sample. Ties have been cut randomly.
+
+```{r}
+# split data in Genus/Species part and rest part
+d_rest <- d %>% 
+    filter(!(level %in% c("Genus", "Species"))) %>%
+    select(-level)
+
+d <- d %>% 
+    filter(level %in% c("Genus", "Species")) %>%
+    select(-level)
+
+# identify generic and specific names (currently more stable than 'mutate')
+d$GENERIC  <- generic_name(d$TAXON)
+d$SPECIFIC <- specific_name(d$TAXON)
+sel <- is.na(d$GENERIC)
+d$GENERIC[sel] <- d$TAXON[sel]
+d$VALUE_OLD <- d$VALUE
+
+# perform genus to species correction for each generic in each sampling unit
+d <- d %>%
+    group_by(ID, GENERIC) %>%
+    mutate(
+        VALUE_NEW = genus_to_species(is_genus = is.na(SPECIFIC), count = VALUE_OLD)
+    ) %>%
+    ungroup %>%
+    select(ID, TAXON, VALUE_OLD, VALUE_NEW) %>%
+    right_join(d_mmi, by = c("ID", "TAXON")) %>%
+    mutate(HAS_CHANGED = abs(VALUE_NEW - VALUE_OLD) > 1.0e-9)
+
+# number of records that has been changed
+n_records_changed <- sum(d$HAS_CHANGED, na.rm = TRUE)
+
+# number of records to report
+n_records_report  <- min(15L, n_records_changed)
+
+```
+The  number of records that have been selected for genus to species conversion is `r n_records_changed`. The first `r n_records_report` records are given below (if relevant, the remainder has been removed to decrease the size of this report). For each record both the old counts (`VALUE_OLD`, counts before conversion) and new counts (`VALUE_NEW`, counts after conversion) are given. 
+
+```{r, results='asis', eval=n_records_report>0}
+d %>%
+    filter(HAS_CHANGED) %>%
+    arrange(OBJECTID, SAMPLEID, DATE) %>%
+    slice(seq_len(n_records_report)) %>%
+    select(OBJECTID, SAMPLEID, DATE, TAXON, VALUE_OLD, VALUE_NEW) %>%
+    mutate(VALUE_OLD = as.integer(VALUE_OLD), DATE = format(DATE)) %>%
+    xtable %>%
+    print(type = "html", include.rownames = FALSE)
+```
+
+
+```{r}
+# Remove taxa with VALUE=0 and not being azoic samples. (These values are due to 
+# genus to species conversion), and add the results to that part of d_mmi 
+# not being involved with genus-to-species conversion
+d_mmi <- d %>%
+    filter(is_azoic(TAXON) | (VALUE_NEW > 1.0e-9)) %>%
+    mutate(VALUE = VALUE_NEW) %>%
+    select(-VALUE_NEW, -VALUE_OLD, -HAS_CHANGED) %>%
+    bind_rows(d_rest)
+```
+
+
+The number of records in the MMI input file after genus to species conversion is `r nrow(d_mmi)`.

@@ -1,0 +1,125 @@
+
+```{r child="weights-optim-exponential.Rmd", eval=needs_optimization}
+```
+
+```{r}
+# remove duplicates
+W <- W %>% 
+    round(digits = 3) %>%
+    {./rowSums(.)} %>%
+    unique
+
+# extract EQRs of interest
+V <- as.matrix(d_ind[, colnames(W)])
+```
+
+```{r}
+to_log("INFO", "Entering subsection 'summary stats for all combinations of weights'...")
+```
+
+
+```{r, eval=has_pressure}
+d <- apply(
+    X = W,
+    MARGIN = 1L,
+    FUN = function(x) {
+        d <- data.frame(MMI_STAR = drop(V %*% x), P = d_ind$PRESSURE) %>%
+            na.omit
+        m <- try(
+                (MMI_STAR ~ b0 + b1*exp(b2*P)) %>%
+                    nls(
+                        data = d,  
+                        start = list(b0 = 0.1, b1 = 0.9, b2 = -1),
+                        control = nls.control(maxiter = 1000)
+                    ),
+                silent = TRUE
+        )
+        list(d = d, m = m)
+    }
+)
+
+# statistics 
+# (deviance should not be used, as this statistic is dependent on the response)
+S <- cbind(W,
+    do.call(
+        what = "rbind", 
+        args = lapply(
+            X = d, 
+            FUN = function(x) {
+                if (inherits(x$m, "try-error")) {
+                    res <- rep.int(NA_real_, times = 6)
+                    names(res) <- c("b1", "b2", "b3", "deviance", "pseudo_r2", "converged")
+                    res <- as.data.frame(res)
+                    res$converged <- FALSE
+                } else {
+                    y <- x$d$MMI_STAR
+                    n <- length(x$d$MMI_STAR)
+                    SS_res <- sum(residuals(x$m)^2)
+                    SS_tot <- var(y) * (n-1)
+                    pseudo_r2 <- 1 - SS_res / SS_tot 
+                    b <- as.numeric(coefficients(x$m))
+                    res <- data.frame(
+                        b0 = b[1],
+                        b1 = b[2],
+                        b2 = b[3],
+                        pseudo_r2 = pseudo_r2,
+                        converged = x$m$convInfo$isConv
+                    )
+                }
+                res
+            }
+        )
+    )
+) %>%
+    as.data.frame %>%
+    arrange(desc(pseudo_r2))
+
+optimization_failed <- all(!S$converged)
+```
+
+```{r child="weights-stats-table-exponential.Rmd", eval=has_pressure && !optimization_failed}
+```
+
+```{r child="plot-eqr-pressure-exponential.Rmd", eval=has_pressure && !optimization_failed}
+```
+
+
+
+```{r}
+if (needs_optimization) {
+    weights <- as.matrix(S)[1, 1:number_of_indicators]
+    weights <- weights[weights > 0]
+    weights_text <- round(weights, 3)
+    names(weights_text) <- sub(pattern = "_STAR$", replacement = "*", x = names(weights_text))
+} else {
+    weights <- settings$weights
+    names(weights) <- indicators_EQR
+    weights_text <- attr(settings$weights, "character")
+    if (is.null(weights_text)) {
+        weights_text <- round(settings$weights, 3)
+    }
+    names(weights_text) <- paste0(indicators, "*")
+}
+```
+
+`r if(needs_optimization){paste("The optimized", title_text, "is:\n")}else{paste("The", title_text, "based on user-specified weights is:\n")}`
+
+MMI* = `r paste(weights_text, names(weights_text), collapse = " + ", sep = " &times; ")`. 
+
+```{r}
+d_ind$MMI_STAR <- drop(V[, names(weights), drop = FALSE] %*% weights)
+```
+
+
+`r if(has_pressure && !optimization_failed){"Summary statistics of this model are given below:\n"}else{"\n"}`
+
+```{r, eval=has_pressure && !optimization_failed}
+(MMI_STAR ~ b0 + b1*exp(b2*PRESSURE)) %>%
+    nls(
+        data = d_ind,
+        start = list(b0 = 0.1, b1 = 0.9, b2 = -1),
+        control = nls.control(maxiter = 1000)) %>%
+    summary
+```
+<br>
+<br>

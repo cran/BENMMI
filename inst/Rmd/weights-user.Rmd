@@ -1,0 +1,16 @@
+```{r}
+to_log("INFO", "Entering subsection 'user defined weights'...")
+```
+
+```{r}
+# W <- diag(number_of_indicators)
+# dimnames(W) <- list(NULL, indicators_EQR)
+# W <- rbind(W, settings$weights)
+
+W <- matrix(
+    data = settings$weights, 
+    nrow = 1, 
+    dimnames = list(NULL, indicators_EQR)
+)
+
+```

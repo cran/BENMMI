@@ -1,0 +1,8 @@
+### Simpson's Measure of Concentration _L_
+
+Simpson's Measure of Concentration gives the probability that two individuals selected at random from a sample will belong to the same species. It is given by (finite sample case):
+
+_L_ = &sum;^S <sub>i=1</sub> (_n_<sub>_i_</sub> (_n_<sub>_i_</sub>-1))/ (_N_ (_N_-1))
+
+where  _n_<sub>_i_</sub> the number of individuals in species _i_  and _N_ the total number of individuals (total abundance).
+

@@ -1,0 +1,77 @@
+"Topic","Check","Action","Comment"
+"BENMMI","Check the existence of the settings-file.","error",
+"BENMMI","Check if the settings-file contains valid JSON.","error",
+"BENMMI","Check the validity of the JSON-keys in the settings-file.","error","Required versus optional keys."
+"BENMMI","Check the consistency of the JSON-keys in the settings-file.","error","Either indices or indicators, but not both."
+"BENMMI","Check index names in the settings-file.","error",
+"BENMMI","Check the number of indices in the settings-file.","error",
+"BENMMI","Check the format of the weights in the settings-file.","error","Floating point format (0.333) and rational format (1/3) are both allowed."
+"BENMMI","Check the consistency between the weights and the indicators in the settings-file.","error",
+"BENMMI","Check the range of the weights in the settings-file.","error","Should be non-negative."
+"BENMMI","Check the range of the confidence level in the settings-file.","error","Should be in [0.50, 0.99]"
+"BENMMI","Check consistency between weights and pressure in settings-file.","error","Weights should be given if pressure is missing."
+"BENMMI","Check if the name and the unit of the pressure are given in the settings-file (if the pressure column has been found in the benthos-file).","warning","BENMMI issues a warning and continues without pressure optimization."
+"BENMMI","Check the range, the order, and the format of the months to analyse in the settings-file.","error","Range should be in  {1, 2, ..., 12},  first month <= second  month,  and format should be an integer vector of length 2."
+"BENMMI","Check the format of Boolean (true/false) variables  in the settings-file.","error","E.g., enable data pooling, enable genus to species conversion."
+"BENMMI","Check the format and the length of the seed to initialize the pseudo random number generator (needed for pooling).","error","Format should be an integer of length 1"
+"BENMMI","Check value of optional key 'legendText'.","error","should be either EQR or normalized."
+"BENMMI","Check if all JSON-keys have been used.","warning","Prevent typographical errors in optional keys."
+"BENMMI","Check the existence of the benthos-file.","error",
+"BENMMI","Check the column names of the benthos-file.","error",
+"BENMMI","Check the uniqueness of the coordinates in the benthos-file.","error",
+"BENMMI","Check the uniqueness of the sieve mesh in the benthos-file.","error",
+"BENMMI","Check if BENMMI can be launched by means of a graphical user's interface.","error","GUIs are usually only implemented on desktops and not on servers."
+"BENMMI","Check if the user presses the CANCEL-button or the ESC-button to cancel execution.","message",
+"BENMMI","Check if the settings-file exists.","error",
+"BENMMI","Check the existence of the species-file.","error",
+"BENMMI","Check if the species-file can be read.","error",
+"BENMMI","Check the existence of the `taxon-groups-to-exclude file'.","error",
+"BENMMI","Check if the `taxon-groups-to-exclude file' can be read.","error",
+"BENMMI","Check the existence of the `benthos-file'.","error",
+"BENMMI","Check if the `benthos-file' can be read.","error",
+"BENMMI","Check the consistency between weights and pressure.","error","Weights should be given when PRESSURE column is missing."
+"BENMMI","Check the situtation when pressure has been specified in the settings-file but is missing in the benthos-file.","error",
+"BENMMI","Check if the months specified in the settings-file are also in the benthos file.","error",
+"BENMMI","Check the existence of the AMBI-file (if specified).","error",
+"BENMMI","Check if the AMBI-file can be read.","error",
+"BENMMI","Check if the AMBI-file is consistent: TAXON-AMBI class combinations should be unique after conversion to WoRMS.","warning","Only the first TAXON-AMBI combination will be used."
+"BENMMI","Check the existence of the AMBI-file (if specified).","error",
+"BENMMI","Check if the ITI-file can be read.","error",
+"BENMMI","Check if ITI-data are still consistent after conversion to WoRMS.","error",
+"BENMMI","Check the existence of the habitat-reference file.","error",
+"BENMMI","Check if the habitat-reference-file can be read.","error",
+"BENMMI","Check if reference data are available for all records in the benthos-file.","error",
+"BENMMI","Check if the BENMMI-report can be generated without errors.","error",
+"BENMMIdir","Check if BENMMIdir can be launched by means of a graphical user's interface.","error","GUIs are usually only implemented on desktops and not on servers."
+"BENMMIdir","Check if the user presses the CANCEL-button or the ESC-button to cancel execution.","message",
+"BENMMIdir","Check if the BENMMI-direcory exists.","error",
+"BENMMIdir","Check if the BENMMI-direcory is empty.","error","We don't want to accidentally overwrite existing files."
+"benthos-file","Check if the following column names exists in the benthos-file: OBJECTID, HABITAT, SAMPLEID, TAXON,  AREA, DATE, VALUE, LAT, LONG, MESH.","error",
+"benthos-file","Check if VALUE column in benthos-file is non-negative.","error",
+"benthos-file","Check date-format.","error","All dates should adhere to ISO 8601 (YYYY-mm-dd)"
+"benthos-file","Check that all AREAs are unique for each sample (i.e., OBJECTID/SAMPLEID/DATE-combination).","error",
+"benthos-file","Check on duplidated records.","error",
+"benthos-file","Check on azoic samples with non-zero VALUE-column.","warning","These abundances will be set to zero."
+"benthos-file","Check if benthos file has still any records left after all checks.","error",
+"benthos-file","Check if VALUE column contains integer values (abundances).","warning","Fractional data may indicate fragments of species, but also species densities."
+"taxa-file","Check if the taxa-file exists.","error",
+"taxa-file","Check if the following column names exists in the taxa-file: group, provided, accepted, level.","error",
+"taxa-file","Check if all taxa can be converted from provided to accepted names.","error","No missing values are allowed in the taxa-file."
+"taxa-file","Check if each record contains a taxonomic group.","warning","An informative warning will be issued."
+"taxa-file","Check if the taxa in column `accepted' belongs to only one taxonomic group.","error",
+"AMBI-file","Check if the AMBI-file exist.","error",
+"AMBI-file","Check if the AMBI-file can be read.",,
+"AMBI-file","Check if the AMBI-file contains columns TAXON and GROUP.","error",
+"AMBI-file","Check on duplicated records.","message","Duplicated records will be removed."
+"AMBI-file","Check if AMBI-classes are permissible (I, II, III, IV, V).","error",
+"ITI-file","Check if the ITI-file exist.","error",
+"ITI-file","Check if the ITI-file can be read.","error",
+"ITI-file","Check if the ITI-file contains columns TAXON and GROUP.","error",
+"ITI-file","Check on duplicated records.","message","Duplicated records will be removed."
+"ITI-file","Check if ITI-classes are permissible (I, II, III, IV).","error",
+"REF-file","Check if the habitat-reference-file exists.","error",
+"REF-file","Check if the habitat-reference-file can be read.","error",
+"REF-file","Check if any indices are specified. If that's not the case an error will be raised.","error",
+"REF-file","Check if all indices are valid. Valid indices are N, LNN, S, D, SN, SNA, H, L, AMBI, ITI, PIE, N2.","error",
+"REF-file","Check if all compulsory column names are available. Compulsory names are: OBJECTID, RELAREA, HABITAT, and BAD*, REF* where * denotes an index.","error",
+"REF-file","Check if duplicated records are available.","warning","Duplicated records will be removed."

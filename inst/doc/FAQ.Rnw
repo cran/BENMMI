@@ -1,0 +1,121 @@
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{BENMMI: FAQ}
+%\VignetteKeyword{benthic}
+%\VignettePackage{BENMMI}
+
+% source: https://www.sharelatex.com/templates/550ea39eafbf3ad60c24e27d
+\documentclass[10pt]{article}
+\usepackage[in]{fullpage} % Sets all page margins equal to 1 inch
+\usepackage[linkcolor=blue]{hyperref} % Required to create hyperlinks to questions from elsewhere in the document
+\hypersetup{pdfborder={0 0 0}, colorlinks=true, urlcolor=blue} % Specify a color for hyperlinks
+\usepackage{todonotes} % Required for the boxes that questions appear in
+\usepackage{tocloft} % Required to give customize the table of contents to display questions
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+\usepackage{palatino}% Use the Palatino font
+
+\setlength\parindent{0pt} % Removes all indentation from paragraphs
+
+% Create and define the list of questions
+\newlistof{questions}{faq}{\large List of Questions} % This creates a new table of contents-like environment that will output a file with extension .faq
+\setlength\cftbeforefaqtitleskip{4em} % Adjusts the vertical space between the title and subtitle
+\setlength\cftafterfaqtitleskip{1em} % Adjusts the vertical space between the subtitle and the first question
+\setlength\cftparskip{.3em} % Adjusts the vertical space between questions in the list of questions
+
+% Create the command used for questions
+\newcommand{\question}[1] % This is what you will use to create a new question
+{
+\refstepcounter{questions} % Increases the questions counter, this can be referenced anywhere with \thequestions
+\par\noindent % Creates a new unindented paragraph
+\phantomsection % Needed for hyperref compatibility with the \addcontensline command
+\addcontentsline{faq}{questions}{#1} % Adds the question to the list of questions
+\todo[inline, color=blue!20]{\textbf{#1}} % Uses the todonotes package to create a fancy box to put the question
+\vspace{1em} % White space after the question before the start of the answer
+}
+
+\begin{document}
+
+%------------------------------------------
+%	TITLE AND LIST OF QUESTIONS
+%------------------------------------------
+
+\begin{center}
+\Huge{\bf \emph{Frequently Asked Questions}} % Main title
+\end{center}
+
+\listofquestions % This prints the subtitle and a list of all of your questions
+\vspace{10mm}
+%\newpage % Comment this if you would like your questions and answers to start immediately after table of questions
+
+%------------------------------------------
+%	QUESTIONS AND ANSWERS
+%------------------------------------------
+
+
+\question{I'm new to R, how do I install BENMMI?}
+
+See the installation manual `BENMMI\_Installation\_Manual.html'.
+
+
+
+\question{I'm using a spreadsheet program for data preparation. Could you give me some advise?}
+
+The user of BENMMI is highly recommended to, before using BENMMI, set the Country-setting on his/her PC to English (United Kingdom), set the decimal mark to '.' (dot), the column separator to ',' (comma), and to select date format 'yyyy-mm-dd'. These settings will ensure that the ISO-date format is correctly maintained in the data input files, that CSV-files are correctly read, saved, and presented, and that columns are separated by a comma.
+
+
+\question{BENMMI complains about my data format. What is going on?}
+
+BENMMI expects a period as decimal separator and \emph{not} a comma (,). In addition, the date format should comply with ISO 8601, \textit{i.e.} YYYY-mm-dd (\textit{e.g.}, 2014-03-31).
+
+In MS-Windows 7, this can be accomplished by means of the 'Region and Language' menu, in MS-Windows XP by means of the 'Regional settings' menu (\textit{e.g.}, by using the English (UK) setting).
+
+These settings are particularly important when using MS-Excel for data preparation.
+
+Also, the character encoding should be UTF-8. Other encodings should be avoided for taxon names (scientific names).
+
+
+
+\question{Do I have to manually convert species names to WoRMS standardized species names?}
+
+No. BENMMI automatically does this for you, using the built-in species list which includes synonym names and associated standardized names.
+You only have to check the BENMMI data analysis report which species names were not recognized by BENMMI. You can manually add these missing species names to the BENMMI species list (in the folder REF-FILES) using the correct BENMMI format. Note that especially missing species names with higher abundances have to be added.
+
+
+
+\question{Does BENMMI analyze juveniles?}
+
+No. In the BENMMI data analysis the age of a species does not play a role. Consequently, there is no metadata to indicate juvenile species. Note that if your data set contains both adult and juvenile records for a single species in a specific sample, you have to merge these two records and add-up the abundances.
+If you don't do this, BENMMI will give you an error message that you have duplicated records and will give you the corresponding record numbers. You then have to judge what is the case with these records, and e.g. merge the records in case of juveniles, or e.g. remove double records in case of double entry of identical records.
+
+
+
+\question{Can BENMMI check my benthos data quality?}
+
+BENMMI performs a range of quality checks on your benthos data. See Appendix I of the `BENMMI\_User\_Manual' for a list of the basic quality checks which are performed. In addition, BENMMI routinely performs MDS (Multi-Dimensional Scaling), based on Bray-Curtis distances of samples. The MDS plot is very informative to judge if specific samples have an outlying composition. These samples can then be inspected further, and if necessary deleted from the data set or adjusted. In addition, BENMMI routinely performs a Margalef quality check of S-1 versus ln(N). This plot is very useful to see if specific samples fall outside the 99\% prediction interval. This may e.g. be caused by the presence of many juveniles (data point below the 99\% prediction interval) or too many (false) species identifications (data point above the 99\% prediction interval).
+
+
+
+\question{Can BENMMI perform data pooling?}
+
+Yes. This option can be useful in case small manual core samples have been taken (e.g. of 0.015 m$^2$) which can be pooled to larger sample areas. Note that the normally used sample areas are 0.1 m$^2$ (of grab samplers, e.g. the Van Veen grab) or 0.078 m$^2$ (of Dutch box corers).
+Therefore, small samples are normally pooled to 0.1 m$^2$ $\pm$ 0.01 m$^2$.
+Note that by performing data pooling, the diversity of your data pool (called beta-diversity) will become a little larger than the diversity of your single samples with the same area (0.1 m$^2$). This is not a problem, if your reference values have also been estimated using data pooling. Alternatively, your data pool index values can be corrected for this additional beta-diversity, which is relevant for the common diversity indexes such as species richness and Margalef diversity.
+
+
+\question{Can BENMMI perform pressure-impact analysis?}
+
+Yes. BENMMI was specifically designed to optimize MMI-combinations against a pressure gradient.
+The quantitative or semi-quantitative pressure data are entered at the sample level. These pressure data can \textit{e.g.} be chemical contaminant data, fisheries activity data, oxygen data, or even expert judgement values of total pressure. It can be selected in the settings file if BENMMI uses linear or exponential regression for curve fitting of pressure-benthic index correlations.
+
+
+\question{Can BENMMI perform trend analysis?}
+
+Yes. By copying the sample date column into the pressure column in the benthos input file, the DATE information is used as a pressure, and linear regression is performed.
+
+It is in general recommended to convert the dates in the PRESSURE column into years, using the MS-Excel function: Cell properties, Customized, yyyy. By using this option, all index values are aggregated for a single year, and the median, 50\% and 95\% confidence intervals are presented. Otherwise aggregation is performed for each specific date, which may give a more complex figure.
+
+
+\question{What are the assessment units of BENMMI?}
+
+The assessment units are a combination of an area code, called an `OBJECTID` in the data input format, and a habitat code. An area code is usually a national area, such as e.g. the German Dogger bank. This habitat code can be constructed by the user. In general it is recommended to use as habitat code a combination of a depth class (e.g. shallow, middle deep or deep) and a sediment type (e.g. sand, mud, coarse, mixed), comparable or similar to the new EUNIS 3 classification system. By using these assessments areas, the benthic variation is reduced, and useful results can be obtained more easily. 
+
+\end{document}

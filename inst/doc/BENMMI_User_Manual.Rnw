@@ -1,0 +1,946 @@
+\documentclass[10pt]{article}
+
+<<ini, echo=FALSE, results='hide', message=FALSE>>=
+library(BENMMI)
+library(benthos)
+library(knitr)
+library(xtable)
+library(ggplot2)
+library(DEoptim)
+library(readr)
+library(dplyr)
+@
+
+
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{BENMMI: An Introduction}
+%\VignetteKeyword{benthic}
+%\VignettePackage{BENMMI}
+
+
+
+% page lay-out
+\usepackage[margin=25.4mm,a4paper]{geometry}
+
+% color (and colortbl)
+\usepackage[table]{xcolor}
+
+% graphics
+\usepackage{graphicx}
+
+% font for sections and chapters
+\usepackage{sectsty}
+\allsectionsfont{\sffamily}
+
+% hyper links
+\usepackage{hyperref}
+
+% indentation
+\setlength\parindent{0pt}
+
+
+% listing
+\usepackage{listings}
+
+% sideways tables
+\usepackage{rotating}
+
+% long tables
+\usepackage{longtable}
+\setlength{\tabcolsep}{12pt}
+
+% macros
+\newcommand{\R}{\textsf{R}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\pkg}[1]{\textbf{#1}}
+
+
+% title
+\title{User Manual BENMMI}
+
+\author{
+    D.J.J. Walvoort\\
+    {\small\it Wageningen Environmental Research}\\
+    {\small\it Wageningen, The Netherlands;}
+    {\small\it e-mail: \tt dennis.walvoort@wur.nl}\\ \smallskip
+    \and
+    W.M.G.M. van Loon\\ 
+    {\small\it Rijkswaterstaat Water, Transport and Living Environment;}
+    {\small\it Department of Information Management}\\
+    {\small\it Lelystad, The Netherlands;}
+    {\small\it e-mail: \tt willem.van.loon@rws.nl}\\ \smallskip
+}
+
+\date{\Sexpr{packageDescription("BENMMI", fields = "Date")}}
+
+\hypersetup{
+    %pdfstartpage = 1,
+    %pdfstartview = XYZ 0 0 1,
+    bookmarksopen = true,
+    bookmarksnumbered = true,
+    pdftitle = {BENMMI User Manual},
+    pdfauthor = {\textcopyright\ Dennis Walvoort \& Willem van Loon},
+    pdfsubject = {},
+    pdfkeywords = {},
+    colorlinks = true,
+    linkcolor = gray,
+    citecolor = gray,
+    filecolor = gray,
+    urlcolor = gray
+}
+
+
+
+\begin{document}
+
+\maketitle
+
+
+\lstdefinelanguage{json}{
+    basicstyle=\scriptsize\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=lines
+}
+
+% alternating row colors
+\rowcolors{2}{blue!5}{white}
+
+
+<<echo=FALSE>>=
+opts_chunk$set(
+    echo = FALSE,
+    comment = NA,
+    quiet = TRUE,
+    progress = FALSE,
+    tidy = FALSE,
+    cache = FALSE,
+    message = FALSE,
+    error = TRUE,
+    warning = TRUE
+)
+@
+
+
+\hrule
+
+\tableofcontents
+
+\bigskip
+\hrule
+
+\section{Introduction\label{sec:intro}}
+
+This tutorial provides a brief introduction to the \pkg{BENMMI}-package. This package facilitates the following types of benthos data analysis:
+\begin{enumerate}
+    \item Quality control of benthos data
+    \item Single index and multimetric index (MMI) optimizations against a pressure gradient
+    \item Routine benthos assessments using an optimized index or MMI
+    \item Production of an analysis report and result files    
+\end{enumerate}
+The MMI is a weighted linear combination of the environmental quality ratio's (EQR) of a subset of the following indices:
+\begin{itemize}
+    \item total abundance ($N$) and its natural logarithm (LNN);
+    \item species richness ($S$);
+    \item Margalef's diversity index ($D$);
+    \item Rygg's index (SN, Rygg (2006); Van Loon \textit{et al.}, 2017; Appendix~\ref{app:rygg});
+    \item Adjusted version of Rygg's index (SNA, Appendix~\ref{app:rygg});
+    \item Simpson's index ($L$);
+    \item Hurlbert's Probability of Interspecific Encounter (PIE) (PIE = 1-L);
+    \item Hill's diversity number N2 (N2 =  1/L);
+    \item Shannon's index ($H'$);
+    \item AZTI Marine Biotic Index (AMBI);
+    \item Infaunal Trophic Index (ITI);
+\end{itemize}
+The maximum number of indices which can be used in a BENMMI-session is three.
+The weights are optimized in order to maximize the correlation between the MMI and a user specified pressure index. Both measured pressure data (\textit{e.g.}, fisheries pressure, oxygen saturation) or a estimated human pressure data (using \textit{e.g.}, multiple information sources) can be used. It is even possible to use dates (YYYY-MM-DD, e.g. 2017-01-24) in the pressure column\footnote{BENMMI will convert the date to a numerical value by using the following expression: year + (day\_of\_year - 0.5) / days\_in\_year. In case of date `2017-01-24', the numerical value is $2017 + \frac{24-0.5}{365} = 2017.064$}. This gives the temporal trend of each index. 
+
+
+The package includes five additional optional features that enhance data preprocessing:
+\begin{itemize}
+    \item data pooling: data from small samples are combined to bigger samples with a standardized size to (a) meet the data requirements of the AMBI, (b) generate comparable species richness values and (c) give a higher benthos signal to noise ratio.
+    \item species name conversion: the tool automatically converts the synonym names into standardized species names using a conversion table (Appendix~\ref{app:groupsToExclude}) which is based on the WoRMS species names list (\url{www.marinespecies.org}).
+    \item genus to species conversion: taxa counts at the taxonomic genus level can optionally be converted to the species level. It is assumed that the unidentified taxa at the genus level can be proportionally distributed over the identified taxa at the species level in the same sample;
+    \item Non-metric multidimensional scaling (Sammon, 1969) of the Bray-Curtis dissimilarity (distance). The results are presented in a plot that can be used for the detection of potential outliers.
+    \item Quality control by fitting $S-1$ versus $\log(N)$. Samples that deviate from this fit are potential outliers.
+
+\end{itemize}
+
+In addition, the BENMMI tool offers additional MMI optimization settings:
+\begin{itemize}
+
+\item choice of maximum three indices;
+
+\item setting for (a) optimization or (b) use of fixed index weight factors;
+
+\item setting of the confidence interval;
+
+\item description of the pressure type (e.g., fisheries pressure, oxygen saturation, sediment load, or even date) and pressure unit.
+
+\end{itemize}
+
+If you're not familiar with R, and don't know how to install R and the BENMMI-package, you should consult the R-website (\url{www.R-project.org}) or read the installation guide provided with the BENMMI-package.
+
+
+
+\section{Quick-start}
+
+The \pkg{BENMMI}-package is loaded by typing
+<<eval=FALSE, echo=TRUE>>=
+library(BENMMI) 
+@
+in the R-console followed by pressing the Return/Enter key.
+
+The workhorse function of the \pkg{BENMMI}-package is called \code{BENMMI}. This function performs a full BENMMI-analysis. It reads all its inputs from, and stores all its outputs to files. By default, the BENMMI-package uses the directory structure in Figure~\ref{fig:intro_dir}.
+\begin{figure}
+    \center
+    \includegraphics[width=0.4\textwidth]{./figures/intro_dir}
+    \caption{Default BENMMI-directory structure.}
+    \label{fig:intro_dir}
+\end{figure}
+
+The default directory structure in Figure~\ref{fig:intro_dir} can be created and populated with sample files by means of the \code{BENMMIdir} function. This function starts after typing
+<<eval=FALSE, echo=TRUE>>=
+BENMMIdir() 
+@
+in the R-console. A directory selection dialogue starts to let you set an (existing, but empty!) working directory interactively.
+In non-interactive mode, the path to the (existing, but empty) working directory should be supplied as argument, 
+\textit{e.g.}:
+<<eval=FALSE, echo=TRUE>>=
+BENMMIdir(path = "c:/myprojects/BENMMI/BENMMI_FILES")
+@
+Note that paths are separated by (forward) slashes. The working directory needs to be empty otherwise the function does not copy files.
+
+
+
+After running  \code{BENMMIdir} two directories have been created:
+\begin{itemize}
+    \item INPUT-FILES: a directory containing BENMMI-input files. These files contain the number of taxa that have been found in each sample. See Appendix~\ref{app:input} for more information.
+    \item REF-FILES: a directory containing BENMMI-reference files. These files contain information on OBJECTIDs/HABITATs (Appendix~\ref{app:habitat}) and species sensitivities (AMBI, Appendix~\ref{app:ambi}, ITI, Appendix~\ref{app:iti}), and a recent copy of the Taxa Water management of the Netherlands (TWN) list. The latest version of this list can be downloaded from \url{sofus.ecosys.nl/taxabase.htm}
+\end{itemize}
+In addition, a set of files with extension `\code{json}' has been created. Each json-file contains the settings for a specific BENMMI-run. See Section~\ref{app:settings} for more information.
+
+The BENMMI-tool can be started by typing 
+<<eval=FALSE, echo=TRUE>>=
+BENMMI()
+@
+in the \R-console. This launches an interactive file selection dialogue. The user is asked to select a settings (*.json) file.
+
+Alternatively, one may also provide the name of the settings file as function argument:
+
+<<eval=FALSE, echo=TRUE>>=
+BENMMI(filename = "c:/myprojects/BENMMI/BENMMI_FILES/settings-S-D-lin.json")
+@
+
+After the BENMMI-run is completed, all results are available in a directory with prefix `OUTPUT' and the current date-time stamp as postfix. In addition, your default web-browser is launched showing the analysis report.
+
+
+
+
+
+\section{The BENMMI-package in more detail}
+
+This section gives an overview of all analysis performed by the BENMMI package. For convenience, the order of the subsections follow that in the BENMMI-report.
+
+\subsection{Data Files and Settings \label{app:settings}}
+
+A BENMMI-run is entirely specified by the contents of a JSON-file (see `\code{*.json}' in Figure~\ref{fig:intro_dir}). The format of this file is JavaScript Object Notation (JSON). This is a well structured, human-readable, open standard format (\url{www.json.org}). To improve readability, comments are allowed as an extension to the JSON-standard. Text after two (forward) slashes (//) is interpreted as comments and will be ignored. The figure below gives an example of a settings file.
+
+Most editors support editing JSON files, including the built-in editor of the Rgui for MS-Windows (see main menu: \texttt{File | Open script...}).
+
+
+\bigskip
+\begin{lstlisting}[language=json,firstnumber=1,commentstyle=blue]
+<<echo=FALSE, results='asis'>>=
+cat(
+    paste(
+        readLines(system.file("extdata", "settings-S-D-lin.json", package = "BENMMI")), 
+        collapse = "\n"
+    )
+)
+@
+\end{lstlisting}
+\bigskip
+
+\noindent The list below briefly describes each key in the JSON-file:
+\begin{itemize}
+\item \textit{title}: the title of the BENMMI run;
+\item \textit{user}: name(s) and affiliation(s) of the analyst(s);
+\item \textit{date}: date when the JSON-file was written;
+\item \textit{files}: the paths to each input file:
+    \begin{itemize}
+        \item \textit{benthos}: the benthos-input file (see Appendix~\ref{app:input} for details);
+        \item \textit{taxa}: Taxa Water management of the Netherlands (TWN) list, which is fully based on the WoRMS species list. A recent version of this list is included in the BENMMI-package. The latest version of this list can be downloaded from \url{sofus.ecosys.nl/taxabase.htm};
+        \item \textit{groupsToExclude}: Taxonomic groups that should be removed from the benthos-input file (see Appendix~\ref{app:groupsToExclude} for details);
+        \item \textit{Habitats}: Habitats Reference file (see Appendix~\ref{app:habitat} for details);
+        \item \textit{AMBI}: optional user defined AMBI-file (see Appendix~\ref{app:ambi} for details);
+        \item \textit{ITI}: optional user defined ITI-file (see Appendix~\ref{app:iti} for details);
+    \end{itemize}
+    Note: optional files can be excluded from analysis by setting its value to null (lower-case!), or by removing the line from the JSON file, or by commenting this line out by C-style comments (//);
+
+\item{\textit{indices}}: the indices to include in the MMI (a subset of N, LNN, S, D, SN, SNA, L, PIE, N2, H, AMBI and ITI). Maximum three indices are allowed. Note: although key-name 'indices' is recommended, the key-name 'indicators' is still allowed for backward compatibility;
+
+\item \textit{weights}: setting weights to null, \textit{i.e.}, \code{"weights": null} (see first JSON-file), the weight factors of the MMI will be optimized, which is the main aim of BENMMI. In addition, BENMMI can use fixed weight factors for each selected index. Weights have to be given as numeric values like \code{[0.333, 0.333, 0.333]}, or as fractions \code{["1/3", "1/3", "1/3"]} (see second JSON-file). Note that fractions should always be quoted. The number of weights should be identical to the number of indices;
+
+\item{\textit{confidenceLevel}}: The BENMMI tool will also compute confidence intervals. \code{confidenceLevel} gives the confidence level. This should be a numeric value between 0.5 and 0.99;
+
+
+\item{\textit{pressure}}: the name and unit of the pressure in the BENMMI-file (Section~\ref{app:input});
+
+\item \textit{months}: integer vector of length 2 containing the first and last months to analyse. \textit{E.g.}, [6, 10] means: `analyse all data from June to October, inclusive';
+
+\item \textit{pooling (see Section~\ref{sec:pooling})}:
+    \begin{itemize}
+        \item \textit{enabled}:  is pooling enabled? [true, false];
+        \item \textit{RandomSeed}: seed to initialize the pseudo random number generator;
+        \item \textit{TargetArea}: samples are combined until the total area is within this range (numeric vector of length 2; units: m$^2$);
+    \end{itemize}
+
+\item \textit{GenusToSpeciesConversion} (see Section~\ref{sec:intro}): is genus to species conversion enabled? [true, false].
+
+\item \textit{model}: type of model to fit to the index-pressure relation. Two models are implemented
+    \begin{itemize}
+        \item `linear': simple linear regression model
+        \item `exponential': exponential model
+    \end{itemize}
+\item \textit{legendText}: Text to be used in figures: either `EQR' or `normalized'
+
+\end{itemize}
+
+
+
+
+\subsection{Selection of benthos records \label{sec:selection}}
+
+After the tool has been started with function \code{BENMMI()}, the BENMMI-file (Section~\ref{app:input}) is read and records outside the specified time-frame (see `months'-key in the JSON-file), and non-endofauna records are removed.
+
+
+\subsection{Taxonomic groups}
+
+In this section of the BENMMI-report, the average abundance (both as counts and as percentages) of taxa in dominant taxonomic groups are graphically presented for each combination of OBJECTID-HABITAT-YEAR.
+
+
+\subsection{Conversion of species names \label{sec:toworms}}
+
+All taxa in the BENMMI-file are looked up in the species names file. Species not found are reported in a table. Occasionally it is possible to suggest a taxon name that is very similar (but not identical) to the names in the species names file. In that case, this name is reported as suggested name. The analyst can use this information to correct potential typing errors.
+
+
+\subsection{Species sensitivity values}
+
+Species sensitivity values are read, first from the user supplied species sensitivity file (Sections~\ref{app:ambi} and \ref{app:iti}). Species sensitivity values that are still missing are taken from  Borja et al., (2000). The tool reports for which taxa species sensitivity values are missing. The species sensitivity values are used to compute the AMBI-index (Borja \textit{et al.}, 2000) or the Infaunal Trophic Index (ITI)-index (Van Loon \textit{et al.}, 2015).
+
+
+\subsection{OBJECTID-HABITATs and sample areas}
+
+For each combination of OBJECTID-HABITAT, an overview of available sampling areas is tabulated. An OBJECTID usually is a national area, \textit{e.g.}, the Dutch Borkum reef area. This table can be used to judge the efficacy of pooling.
+
+
+
+\subsection{Conversion of genus to species within a single sample \label{sec:genus2species}}
+
+If enabled in the JSON-file, the tool converts taxa at the taxanomic genus level to the species level. It is assumed that the unidentified taxa at the genus level can be proportionally distributed over the identified taxa at the species level in the same sample.
+
+
+\subsection{Data pooling \label{sec:pooling}}
+
+If enabled in the JSON-file, data from small samples are combined to bigger samples with a specified size to (a) meet the data requirements of the AMBI, (b) generate comparable species richness values and (c) give a higher benthos signal to noise ratio.
+
+
+\subsection{Multidimensional scaling (MDS)}
+
+This section provides a non-metric multidimensional scaling plot of the Bray-Curtis dissimilarity (distance). The algorithm used is that of Sammon (1969). The MDS-plot can be used to identify potential outlier samples. A table with information on potential outlier samples is given for convenience. MDS is only applied if the pooling option is disabled. Note that MDS is slow for large data sets. An example of an MDS-plot is give in Figure~\ref{fig:mds}.
+
+\begin{figure}
+    \center
+    \includegraphics[width=\textwidth]{./figures/mds.png}
+    \caption{Example of a BENMMI multidimensional scaling plot with area codes: 1 = BE\_NorthSea-Coarse; 2 = BE\_NorthSea-Sand; 3 = DE\_Coastal-Sand; 4 = DE\_SylterOuterReef-Coarse; 5 = DE\_SylterOuterReef-Sand; 6 = NL\_CoastalZone-Sand; 7 = NL\_DoggerBank-Sand; 8 = NL\_FrysianFront-Sand; 9 = NL\_Offshore-Sand; 10 = NL\_OysterBanks-Mud. The labels in the plot refer to individual samples.}
+    \label{fig:mds}
+\end{figure}
+
+
+\subsection{Index calculation}
+
+After all steps above are carried out, a maximum of three user-specified marine benthos indices are estimated. 
+
+\subsection{Index percentile values}
+
+To get information on the distribution of each index in each OBJECTID-HABITAT, percentile values are given. These percentiles may also be useful to set the reference values of the Index Ecological Quality Ratios (Section~\ref{sec:eqr}).
+
+
+\subsection{Index Ecological Quality Ratios (normalization) \label{sec:eqr}}
+
+Finally, the index values are converted to ecological quality ratio's (EQR). The general EQR-formula for index $I$ is:
+\[
+    \mathrm{EQR}(I) = \frac{I_\mathrm{ass} - I_\mathrm{bad}}{I_\mathrm{ref} - I_\mathrm{bad}}
+\]
+where $I_\mathrm{ass}$ is the estimated index value, and $I_\mathrm{ref}$ and $I_\mathrm{bad}$ are its values for a reference status and a bad status respectively, which need to be specified in the habitat reference file (Appendix~\ref{app:habitat}).
+To estimate reference values, BENMMI should be run with best guess values first. After that, the reference values can be updated by means of the percentiles given in the BENMMI-report (see Van Loon et al., 2015 and 2017 for details about this procedure).
+
+Depending on `bad' and `ref', the EQR usually (but not necessarily!) varies between 0 (bad ecological quality) and 1 (reference ecological quality).
+
+
+
+\subsection{Results: optimization and aggregation}
+
+This section contains all the results.
+
+
+\subsubsection{Study area}
+
+This section contains a map of the sampling locations in the study area.
+
+\subsubsection{Correlations}
+
+This section contains scatter plots for all pairs of indices. An example is given in Figure~\ref{fig:d-s}. This figure gives the relation between Margalef's diversity index (D) and species richness (S).
+
+\begin{figure}
+    \center
+    \includegraphics[width=0.9\textwidth]{./figures/d-s.png}
+    \caption{Scatter plot of Margalef's diversity index (D) versus species richness (S). The colours refer to different areas.}
+    \label{fig:d-s}
+\end{figure}
+
+
+\subsubsection{Optimization}
+
+The model we want to optimize is:
+\[
+\mathrm{MMI}^* =  f(P_1, P_2, \dots)
+\]
+Where MMI$^*$ is the EQR (or normalized version) of the multimetric index MMI, $P_1$, $P_2$ are pressures, and $f(\cdot)$ means `is a function of'.
+
+
+If we assume a linear model and only one pressure $P_1$ this model simplifies to
+
+\[
+\mathrm{MMI}^* =  b_0 + b_1 \times P_1
+\]
+
+Where $b_0$ and $b_1$ are the intercept and the slope respectively.
+
+MMI$^*$ is a weighted linear combination of the benthic indices:
+
+\[
+\mathrm{MMI}^* =  w_1 \times index1^* + w_2 \times index2^* + \dots
+\]
+where the weights are nonnegative ($w_i \ge 0$) and sum to one ($\sum w_i = 1$.)
+
+Suppose the number of indices in the MMI and therefore the number of weights equals 3. Then the aim is to find that set of weights $w_1$, $w_2$, $w_3$, $b_0$, $b_1$ that maximizes $r_\mathrm{adj}^2$ (explained variance of the model), given the constraints that the weights $w_i$ are nonnegative and sum to one.
+
+
+For a single metric index, ordinary least squares is used for optimization. For a bimetric index, Brent's method (combination of golden section search and successive parabolic interpolation) is used, and for a trimetric index the Downhill simplex method by Nelder \& Mead is used. See \url{www.nr.com} for more information on these optimizaton methods.
+
+In case an exponential model is specified in the settings file, the following model will be fitted by means of non-linear least squares (Gauss-Newton algorithm as implemented in the nls-function of R):
+
+\[
+\mathrm{MMI}^* = b_0 + b_1 \times \exp(b_2 \times P_1)
+\]
+
+The estimation of the weights is identical to that of fitting a linear model.
+
+
+\subsubsection{Aggregation}
+
+The final section gives averaged indices for all combinations of OBJECTID-HABITAT-YEAR including confidence limits.
+
+
+\subsection{Appendices}
+
+The appendices are described below.
+
+\subsubsection{Quality control plot based on Margalef D}
+
+In this section, plots are provided of $S-1$ as function of $\log(N)$. See Figure~\ref{fig:s-logn} for an example. These plots can be used to identify potential outliers. The assumption is that the relation between $S-1$ and $\log(N)$ is approximately linear. Note that the ratio of $S-1$ and $\log(N)$ is Margalefs index of diversity.
+
+\begin{figure}
+    \center
+    \includegraphics[width=0.7\textwidth]{./figures/s-logn.png}
+    \caption{Example of a quality control plot based on Margalef D.}
+    \label{fig:s-logn}
+\end{figure}
+
+
+
+\subsubsection{Confidence interval versus sample size}
+
+Plots of precision as function of sample size are provided for each combination of OBJECTID and HABITAT (following the method outlined in Knotters and Brus, 2012). These plots and accompanying table provide the user an estimate of the minimum sample size needed to obtain an estimate of the mean EQR with a required confidence interval.
+
+
+
+\subsection{Output files}
+After running the tool, the following results are available: 
+\begin{enumerate}
+    \item a report in HTML-format, containing all sections given above (file prefix: `REPORT');
+    \item a file with prefix `TIDY', which is a version of the benthos-input file (Appendix~\ref{app:input}) that has been cleaned up by BENMMI prior to calculating indices. Cleaning up includes: 
+    \begin{enumerate}
+        \item removing months outside the period of interest (Section~\ref{sec:selection});
+        \item removing non-endofauna taxa (Section~\ref{sec:selection});
+        \item making taxon names WoRMS-compliant (Section~\ref{sec:toworms});
+        \item optionally: genus to species conversion (Section \ref{sec:genus2species});
+        \item optionally: data pooling (Section~\ref{sec:pooling}). In case data pooling has be enabled, two additional columns will be added: 
+        \begin{enumerate}
+            \item POOL\_RUN giving the identifier of the pool run (1...10) and 
+            \item POOL\_ID giving the identifier of a pool within a POOL\_RUN.
+        \end{enumerate}
+    \end{enumerate}
+    \item output files with results at three spatial scales:
+    \begin{enumerate}
+        \item sampling unit level (file prefix: `SAMPLE')
+        \item habitat level (file prefix: `HABITAT') 
+        \item area level (file prefix: `OBJECTID')
+    \end{enumerate}
+    \item a log-file with informative, warning, and error messages (file prefix: `LOG');
+    \item an optional file with pooling information (file prefix: `POOLING');
+    %\item a data snap shot, \textit{i.e.}, a compressed file containing all input and output files described above.
+\end{enumerate}
+
+
+
+\section{References}
+
+\begin{enumerate}
+
+\item David Ardia, Katharine M. Mullen, Brian G. Peterson, Joshua Ulrich (2016). 'DEoptim': Differential Evolution in 'R'. version 2.2-4.
+https://CRAN.R-project.org/package=DEoptim
+
+\item Borja, A., J. Franco and V. P{\'e}rez, 2000. A Marine Biotic Index to Establish the Ecological Quality of Soft-Bottom Benthos Within European Estuarine and Coastal Environments. Marine Pollution Bulletin 40:1100-1114
+
+\item Knotters, M. and D.J. Brus, 2012. KRW-monitoring rivieren: analyse van het benodigde aantal macrofaunamonsters. Report 2368, Alterra, Wageningen University and Research Centre, The Netherlands.
+
+\item Rygg, B. (2006). Developing indices for quality-status classification of marine soft-bottom fauna in Norway. Norwegian Institute for Water Research, Oslo, Norway. NIVA Report SNO 5208-2006.
+
+\item Sammon, J. W., 1969. A non-linear mapping for data structure analysis. IEEE Trans. Comput., C-18 401-409.
+
+\item Storn, R. and Price, K. (1997) Differential Evolution - A Simple and Efficient Heuristic for Global Optimization over Continuous Spaces, Journal of Global Optimization, 11:4, 341-359.
+
+\item Van Loon, W.M.G.M. A.R. Boon, A. Gittenberger, D.J.J. Walvoort, M. Lavaleye, G.C.A. Duineveld, A.J. Verschoor, 2015. Application of the Benthic Ecosystem Quality Index 2 to benthos in Dutch transitional and coastal waters. Journal of Sea Research 103:1-13
+
+\item Willem van Loon, Dennis Walvoort, Gert van Hoey, Christina Vina-Herbon, Abigayil Blandon, Roland Pesch, Petra Schmidt, Jorg Scholle, Karin Heyer, Marc Lavaleye, Graham Philips, Gerard Duineveld, Mats Blomqvist, 2017. A regional benthos assessment method for the Southern North Sea using Margalef diversity and reference value modeling. Accepted for publication by Ecological Indicators.
+
+
+\end{enumerate}
+
+\clearpage
+
+\appendix
+
+
+
+\clearpage
+\section{BENMMI input file\label{app:input}}
+
+The format of the BENMMI input file has been specified in the table below. The format is the so called comma-separated values format (CSV) with the following characteristics:
+\begin{itemize}
+    \item decimal separator: period (.)
+    \item column separator: comma (,)
+    \item text values are preferably quoted
+\end{itemize}
+
+The following columns are present in the data format: OBJECTID, SAMPLEID, HABITAT, LAT, LONG, TAXON, SAMPDEV, AREA, DATE, VALUE, and PRESSURE. SAMPDEV and PRESSURE are optional, the other columns are required. The order of the columns is invariant. In addition, the use may also add other columns containing additional data (like meta-information). These columns will be ignored by BENMMI.
+
+NB: It should be stressed that the VALUE column should contain taxa-counts and \textit{not} taxa densities. 
+
+
+<<echo=FALSE, results='asis'>>=
+d <- scan(
+    file = "./tables/tab-benmmi-input.csv", 
+    what = character(), 
+    sep = ",",
+    quiet = TRUE
+)
+h <- d[1:3]
+d <- as.data.frame(matrix(data = d[-(1:3)], ncol = 3, byrow = TRUE))
+colnames(d) <- h
+print(
+    xtable(x = d, align = "llp{50mm}p{50mm}"), 
+    include.rownames = FALSE, 
+    size = "footnotesize",
+    add.to.row = list(list(-1), "\\rowcolor{blue!15}")
+)
+@
+
+
+
+
+\clearpage
+\section{AMBI file \label{app:ambi}}
+
+This species sensitivity file consists of two columns, and is stored in comma separated file format (CSV). The first column contains the taxa, the second column the corresponding sensitivity classes. The table below gives an example of (part of) a species sensitivity file.
+
+<<echo=FALSE, results='asis'>>=
+d <- read_ambi(
+    filename = system.file(
+        "extdata", "REF-FILES", "AMBI-NL+.csv", 
+        package = "BENMMI"
+    )
+)
+print(
+    xtable(x = d[sample.int(n = nrow(d), size = 25), ], align = "llr"), 
+    include.rownames = FALSE,
+    size = "footnotesize",
+    add.to.row = list(list(-1), "\\rowcolor{blue!15}")
+)
+@
+For most of the taxa that are not present in the AMBI user file, the (built-in) default AMBI file from AZTI will be used. Users may append new taxa to the AMBI user file (AMBI-NL+.csv or user-made file), or modify classes of existing taxa using the external AMBI-NL+ or user file.
+
+
+
+
+
+\clearpage
+\section{ITI file \label{app:iti}}
+
+This species sensitivity file consists of three columns, and is stored in comma separated file format (CSV). The first column contains the taxa, the second column the corresponding sensitivity classes, and the third column specifies if a taxon is a carnivore or not. The table below gives an example of (part of) a species sensitivity file.
+
+<<echo=FALSE, results='asis'>>=
+d <- read_iti(
+    filename = system.file(
+        "extdata", "REF-FILES", "ITI+carnivores-2015-10-23.csv", 
+        package = "BENMMI"
+    )
+)
+print(
+    xtable(x = d[sample.int(n = nrow(d), size = 25), ], align = "llrr"), 
+    include.rownames = FALSE,
+    size = "footnotesize",
+    add.to.row = list(list(-1), "\\rowcolor{blue!15}")
+)
+@
+Users who want to add additional taxa to the ITI file are requested to do this via \href{mailto:willem.van.loon@rws.nl}{Willem van Loon}, in order to keep a standardized ITI file in BENMMI.
+It is recommended not to change the ITI classifications in the BENMMI ITI file, apart from experimental analyses, in order to maintain comparable ITI results between the users of this tool, in at least the North Sea region. 
+Note that the classification of carnivores has been added purely for information, and that carnivores are not used in the standard ITI calculation.
+
+
+
+\clearpage
+\section{Habitat Reference file \label{app:habitat}}
+The Habitat Reference file contains meta-information about each OBJECTID and HABITAT. In particular, it lists the REF and BAD values for each index for computing the EQRs (see Section \ref{sec:eqr}). At least the reference data for the selected indices in the settings-file (JSON-file) should be given. Note: estimated reference values (using the 99-percentile method; Van Loon et al., 2015, 2017) have been added to this file.
+<<echo=FALSE, results='asis'>>=
+filename <- system.file(
+    "extdata", "REF-FILES", "AREAS-HABITATS-SNS-2016-11-27.csv", 
+    package = "BENMMI"
+)
+d <- read_ref(file = filename, indicators = c("D", "S", "AMBI", "ITI"))
+print(
+    xtable(x = d), 
+    include.rownames = FALSE,
+    size = "footnotesize",
+    add.to.row = list(list(-1), "\\rowcolor{blue!15}"),
+    sanitize.text.function = function(x) {
+        gsub(pattern="_", replacement = "\\\\_", x=x)
+    },
+    rotate.colnames = TRUE
+)
+@
+
+The column RELAREA is the spatial area of each OBJECTID/HABITAT. This area may be given either in km$^2$ or as a fraction (but not both). BENMMI uses the relative area to estimate the HABITAT area weighted average for each OBJECTID and YEAR. In the table above, each OBJECTID/HABITAT is equally weighted.
+
+\clearpage
+\section{Taxa-list and taxonomic groups to exclude \label{app:groupsToExclude}}
+
+File `TAXONOMIC-GROUPS-EXCLUDED.csv', is located in the REF-FILES directory and contains all taxonomic groups that should be excluded from analysis. This file should contain zero or more records. The default table is given below.
+
+<<echo=FALSE, results='asis'>>=
+filename <- system.file(
+    "extdata", "REF-FILES", "TAXONOMIC-GROUPS-EXCLUDED.csv", 
+    package = "BENMMI"
+)
+d <- read_csv(
+    file = filename, 
+    col_types = cols(
+      GROUP = col_character(),
+      DESCRIPTION = col_character()
+    ))
+print(
+    xtable(x = d, align = "lll"), 
+    include.rownames = FALSE, 
+    size = "footnotesize",
+    add.to.row = list(list(-1), "\\rowcolor{blue!15}")
+)
+@
+
+All taxonomic groups in this table will be removed from the BENMMI-input file (Appendix~\ref{app:input}) prior to analysis.
+
+The taxonomic group (GROUP-column) in the table above should correspond to the GROUP-column in the taxa-list which is also in the REF-files directory (file name: `TAXA-BE-DE-NL-UK-2017-01-06.csv'). The first 10 records of the taxa-list are given below.
+
+The taxa list is a simple conversion table, based on WoRMS, that converts provided taxa (see TAXON-column in the BENMMI-input file (Appendix~\ref{app:input})) to accepted taxa. This table also contains the taxonomic groups, the taxonomic levels, and a quality code (\textit{i.e.}, 10 = `Preferred name', 20 = `Synonym', 80 = `Non-taxonomic species group').
+
+
+
+<<echo=FALSE, results='asis'>>=
+filename <- system.file(
+    "extdata", "REF-FILES", "TAXA-BE-DE-NL-UK-2017-01-06.csv", 
+    package = "BENMMI"
+)
+d <- read_csv(
+    file = filename, 
+    col_types = cols(
+      group = col_character(),
+      provided = col_character(),
+      accepted = col_character(),
+      level = col_character(),
+      quality_code = col_integer()
+    )
+)
+print(
+    xtable(x = d %>% slice(1:10), align = "lllllr"), 
+    include.rownames = FALSE, 
+    size = "footnotesize",
+    add.to.row = list(list(-1), "\\rowcolor{blue!15}")
+)
+@
+
+
+
+
+\clearpage
+\section{Distribution of taxa over taxonomic groups file \label{app:group}}
+
+The taxonomic group file in the OUTPUT directory gives for each sample the percentage of taxa that are in each taxonomic group. An example of a small part of this table is given below
+<<echo=FALSE, results='asis'>>=
+# https://cran.r-project.org/web/packages/xtable/vignettes/xtableGallery.pdf
+d <- read.csv(file = "./tables/tab-GROUP.csv")
+print(xtable(d[1:20, 1:11]), floating.environment = 'sidewaystable', size = 'footnotesize', include.rownames = FALSE)
+@
+
+
+
+\clearpage
+\section{Distribution of taxa over ITI-groups}
+
+The ITI-group file  in the OUTPUT directory gives for each sample the percentage of taxa that are in each ITI-group. An example of a small part of this table is given below
+<<echo=FALSE, results='asis'>>=
+# https://cran.r-project.org/web/packages/xtable/vignettes/xtableGallery.pdf
+d <- read.csv(file = "./tables/tab-ITI.csv")
+names(d)[ncol(d)] <- "NA"
+print(xtable(d[1:20, ]), floating.environment = 'sidewaystable', size = 'footnotesize', include.rownames = FALSE)
+@
+
+
+\clearpage
+\section{Rygg's index of diversity \label{app:rygg}}
+
+Species richness $S$ is strongly dependent on sampling size. Rygg's index of diversity ($SN$) takes sampling size into account (Rygg, 2006). It is given by
+\[
+    SN = \frac{\ln{S}}{\ln(\ln(N))}
+\]
+where $N$ is the total abundance, \textit{i.e.}, the total number of individuals in the sampling unit.
+
+Rygg's index shows some inconsistencies for small $N$ and $S$ (notably, for $(S=2, N=2)$, $(S=2, N=3)$ and $(S=3, N=3)$; see the package vignette of the \pkg{benthos}-package for more details). To correct for this, we have introduced an \emph{adjusted} version of Rygg's index, $SNA$. It is given by:
+
+\[
+    SNA = \frac{\ln{S}}{\ln(\ln(N+1)+1)}
+\]
+
+
+
+
+
+\clearpage
+\section{Fitting a generalized logistic function}
+
+
+<<echo=FALSE, message=FALSE>>=
+set.seed(314)
+@
+
+<<eval=FALSE, echo=FALSE>>=
+#Calculated with BENMMI 2016-08-18
+d <- read_csv("saltkallefjord-indices.csv") %>%
+    mutate(
+        date = SAMPLEID %>% 
+            substr(start = 7, stop = 16) %>% 
+            as.Date
+    ) %>%
+    select(date, D)
+d %>%
+    arrange(date) %>%
+    write_csv("saltkallefjord-D.csv")
+@
+
+
+
+<<echo=FALSE>>=
+
+plot_fit <- function(d, theta = NULL) {
+    g <- ggplot() + 
+        geom_point(
+            data = d,
+            mapping = aes(x = date, y = D), 
+            colour = "blue"
+        ) +
+        scale_x_date(
+            name = "", 
+            limits = as.Date(c("1965-01-01", "1980-01-01"))
+        ) +
+        scale_y_continuous(name = "Margalef diversity D")
+    if (is.null(theta)) {
+        return(g)
+    }
+    d_fit <- data.frame(
+        date = seq(
+            from = min(d$date), 
+            to = max(d$date), 
+            by = 0.1
+        )
+    )
+    d_fit$ndate <- as.numeric(d_fit$date)
+    d_fit$D <- f_gl(x = d_fit$ndate, theta)
+    g +
+        geom_path(
+            data = d_fit, 
+            mapping = aes(x = date, y = D)
+        )
+}
+@
+
+
+In Van Loon \textit{et al.} (2017, submitted), a generalized logistic function is fitted to index values as function of time. In this Appendix, we will demonstrate how to fit this function to Margalef's diversity index. All source code below can be copied to the R-console and executed.
+
+A generalized logistic function is given  by
+\[
+    A + \frac{K - A}{1 + \exp\left(-B(x-M)\right)}
+\]
+where $A$ is the lower asymptote, $K$ is the upper asymptote, $B$ is the growth rate, $M$ is a starting time, and $x$ is time. %See \url{https://en.wikipedia.org/wiki/Generalised_logistic_function} for details.
+
+A generalized logistic function can be written as an R function:
+<<echo=TRUE>>=
+f_gl <- function(x, theta) {
+    A <- theta[1]
+    K <- theta[2]
+    B <- theta[3]
+    M <- theta[4]
+    A + (K - A) / (1 + exp(-B*(x-M)))
+}
+@
+
+We will use the `Saltkallefjord' data in Van Loon \textit{et al.} (2017, submitted) as an example. These data reside in the vignette directory of the BENMMI-package and can be loaded as follows:
+<<echo=TRUE>>=
+# read data
+d_obs <- read.csv("./data/saltkallefjord-D.csv", as.is = TRUE)
+
+# coercion from character to Date-object
+d_obs$date <- as.Date(d_obs$date)
+
+# print head of these data
+head(d_obs)
+@
+
+The data are given in the plot below:
+
+<<fig.width=4, fig.height=3, out.width="0.7\\textwidth", echo=FALSE>>=
+plot_fit(d_obs)
+@
+
+To use the \verb"date"-column of these data in our computations, we need to convert it to a numeric value. That can be done as follows:
+<<echo=TRUE>>=
+d_obs$ndate <- as.numeric(d_obs$date)
+@
+
+Next we have to define an objective function. The objective function describes what exactly we want to optimize and under what constraints. 
+
+<<echo=TRUE>>=
+f_obj <- function(theta, data) {
+    # constraint: lower asymptote should be nonnegative
+    if (theta[1] < 0) {
+        return(Inf)
+    }
+    
+    # predict Margalef diversity by means of the generalised logistic function
+    D_hat <- f_gl(data$ndate, theta)
+    
+    # difference between Margalef diversity based on 
+    # observations and the generalised logistic function
+    error <- d_obs$D - D_hat
+    
+    # our objective to minimize: the sum of squared errors
+    sum(error * error)
+}
+@
+
+We need an optimization method to minimize this objective function. We found that, for our data, simple general purpose optimization methods like `Nelder-Mead' were susceptible to local optima. Therefore, we used the global optimization method `differential evolution' (Storn \& Price, 1997, Ardia et al., 2016) instead:
+
+<<echo=TRUE>>=
+# define lower and upper bounds for each parameter
+lower_bounds <- c(0, 5, 0.0001, -1000)
+upper_bounds <- c(5, 9, 1.0000,  1000)
+
+# DE-optimization
+opt <- DEoptim(
+    fn = f_obj, 
+    lower = lower_bounds, 
+    upper = upper_bounds, 
+    data = d_obs, 
+    control = DEoptim.control(NP = 100, itermax = 100, trace=FALSE)
+)
+@
+
+<<echo=FALSE>>=
+# check results
+theta <- opt$optim$bestmem
+in_bounds <- all(abs(theta - lower_bounds) > 1.0e-3) & 
+             all(abs(theta - upper_bounds) > 1.0e-3)
+    
+if (!in_bounds) {
+    cat("parameters pressed against bounds: ", toString(p), "\n")
+    print(lower_bounds)
+    print(upper_bounds)
+}
+
+@
+The optimal fit is given below:
+
+<<fig.width=4, fig.height=3, out.width="0.7\\textwidth", echo=FALSE>>=
+plot_fit(d_obs, theta)
+@
+
+
+
+
+
+
+\clearpage
+\section{Overview of quality checks in BENMMI}
+
+The table below gives the most important quality checks implemented in BENMMI. This table focuses on the main user functions of BENMMI: \code{BENMMI} and \code{BENMMIdir}. This table is not exhaustive as it doesn't contain the numerous checks in packages it depends on. This is in particularly true for the \pkg{benthos}-package. Neither does this table contain the checks that are already documented in the BENMMI-report (this report is the result of calling the function \code{BENMMI}). Examples are the compliance check with accepted names in the WoRMS-database (\url{www.marinespecies.org}), the cumulative distributions of species abundances, or plots of species richness versus species abundance.  
+
+The table has the following columns:
+
+\begin{description}
+    \item[Topic:] The name of a user-function in the \pkg{BENMMI}-package, or the name of a BENMMI-file;
+    \item[Check:] A brief description of the quality check;
+    \item[Action:] The action BENMMI takes if the quality check fails: error (execution stops), warning, or informative message;
+    \item[Comment:] Additional information on the quality check.
+\end{description}
+
+<<echo=FALSE, results='asis'>>=
+# https://cran.r-project.org/web/packages/xtable/vignettes/xtableGallery.pdf
+d <- read.csv(file = "./tables/tab-checks.csv")
+print(
+    xtable(d, align = "llp{55mm}lp{30mm}"), 
+    hline.after = c(-1), 
+    add.to.row = list(
+        pos = list(0),
+        command = paste0(
+            "\\hline\n\\endhead\n",
+            "\\hline\n",
+            "\\multicolumn{", ncol(d) + 1, "}{l}",
+            "{\\footnotesize Continued on next page}\n",
+            "\\endfoot\n",
+            "\\endlastfoot\n")),
+    floating = FALSE,
+    tabular.environment = "longtable"
+)
+
+@
+
+
+
+
+
+
+\end{document}

@@ -968,8 +968,6 @@ function(filename = NULL, tmpdir = tempfile(pattern = "BENMMI"), browse = TRUE) 
 
 #' Perform BENMMI Analysis
 #'
-#' @inheritParams benmmi
-#'  
 #' @rdname benmmi-main
 #'  
 #' @export

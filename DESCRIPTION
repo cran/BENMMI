@@ -10,8 +10,8 @@ Description: Analysis tool for evaluating benthic multimetric indices (BENMMIs).
     of benthic indicators. One of its use cases was the development of a common 
     benthic indicator for <https://www.ospar.org> (publication accepted by 
     Ecological Indicators). See Van Loon et al. (2018) <doi:10.1016/j.ecolind.2017.09.029> for details. 
-Version: 4.3-6
-Date: 2019-01-18
+Version: 4.3-7
+Date: 2020-10-12
 Authors@R: c(person(given = "Dennis",
     family = "Walvoort", email = "dennis.Walvoort@wur.nl", role = c("aut",
     "cre")), person(given = "Willem", family = "van Loon", email =
@@ -20,13 +20,14 @@ Depends: R (>= 3.2.0)
 Imports: benthos (>= 1.3-5), readr, purrr, knitr, markdown, jsonlite,
         xtable, dplyr (>= 0.7.0), tidyr, ggplot2 (>= 2.0.0)
 Suggests: DEoptim
+VignetteBuilder: knitr
 License: GPL (>= 3)
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2019-01-18 07:56:47 UTC; dennis
+Packaged: 2020-10-12 07:51:08 UTC; dennis
 Author: Dennis Walvoort [aut, cre],
   Willem van Loon [aut, cph]
 Maintainer: Dennis Walvoort <dennis.Walvoort@wur.nl>
 Repository: CRAN
-Date/Publication: 2019-01-25 17:30:26 UTC
+Date/Publication: 2020-10-12 08:20:02 UTC

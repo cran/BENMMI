@@ -4,7 +4,6 @@
 \name{benmmi-pkg}
 \alias{benmmi-pkg}
 \alias{_PACKAGE}
-\alias{benmmi-pkg-package}
 \title{Benthic Multi-Metric Indicator Analysis}
 \description{
 Reporting tool for a benthic multimetric indicator

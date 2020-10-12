@@ -1,0 +1,23 @@
+"Item (header in data table)","Comments","Examples"
+"Measuring object id (OBJECTID)",,"Dogger_bank"
+"Sample-id (SAMPLEID)
+","Location code or Sample number or 
+transect station etc.
+
+Note1: the BENMMI tool combines the sample code with the date to ensure a unique sample code.","North Sea: e.g. NOORDWK2;
+Dollard: Transect-station code;
+Delta: 1304
+
+"
+"Habitat code (HABITAT)","For the North Sea project EUNIS 3 codes are used, e.g., Sand, Mud, Coarse, Mixed. However, other global habitat descriptions including e.g. salinity class can be used.","Sand"
+"LAT","latitude (decimal degrees)",52.31
+"LONG","longitude (decimal degrees)",3.17
+"Taxon name (TAXON)","Standardized taxon code (see WoRMS-website)
+In NL: the TWN code",
+"Sampling device (SAMPDEV)","The code of the sampling device.","e.g., BOXCRR of VEENGB
+"
+"Sampled area (AREA)","The sampling area is necesarry for comparing sample areas and the data pooling process. The unit is m2.","E.g. 0.015 m2."
+"Sieve mesh size (MESH)","Mesh size of the sieve that has been used to filter sediment/benthos. The mesh size needs to be a unique numerical value. The unit is micrometer.","1000 (commonly used) or 500"
+"Date (DATE)","ISO format: YYYY-MM-DD is mandatory.","2001-03-05"
+"Numerical value (VALUE)","Numerical value representing the number of individuals (NB: not the density!). Decimals are allowed to indicate fractions of individuals..",20.5
+"pressure (PRESSURE)","Numerical value.",6.23

@@ -5,8 +5,7 @@
 \alias{BENMMI}
 \title{Perform BENMMI Analysis}
 \usage{
-benmmi(filename = NULL, tmpdir = tempfile(pattern = "BENMMI"),
-  browse = TRUE)
+benmmi(filename = NULL, tmpdir = tempfile(pattern = "BENMMI"), browse = TRUE)
 
 BENMMI(filename = NULL, tmpdir = tempdir(), browse = TRUE)
 }
